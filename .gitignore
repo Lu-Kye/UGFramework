@@ -4,6 +4,7 @@
 /[Bb]uild/
 /IOS/
 /Android/
+/.vscode/
 
 *.DS_Store
 
