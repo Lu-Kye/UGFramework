@@ -1,8 +1,11 @@
 ﻿using UnityEngine;
-using System.Collections;
 
 namespace UGFramework
 {
+	/**
+	 * --- DOC BEGIN ---
+	 * --- DOC END ---
+	 */ 
 	public class ResourceManager : MonoBehaviour 
 	{
 	}

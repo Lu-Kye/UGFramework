@@ -1,5 +1,4 @@
 ﻿using UnityEngine;
-using System.Collections;
 using System.Diagnostics;
 using System.Text;
 using UnityEditor;
@@ -57,7 +56,7 @@ namespace UGFramework
 			else
 				UnityEngine.Debug.Log(output);
 
-			if (!string.IsNullOrEmpty(error.Trim ())) 
+			if (!string.IsNullOrEmpty(error.Trim())) 
 			{
 				UnityEngine.Debug.LogError(error);
 			}

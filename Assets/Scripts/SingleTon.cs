@@ -2,10 +2,12 @@
 
 namespace UGFramework
 {
-	/*
-	* All singleTon class have to extend MonoBehaviour
-	* so that we can see all singleTon in Hierarchy	
-	*/
+	/**
+	 * --- DOC BEGIN ---
+	 * All singleTon class have to extend MonoBehaviour
+	 * so that we can see all singleTon in Hierarchy	
+	 * --- DOC END ---
+	 */
 	public class SingleTon<T> : MonoBehaviour 
 		where T : SingleTon<T>
 	{
