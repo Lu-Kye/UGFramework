@@ -18,7 +18,7 @@ namespace UGFramework
             rGEnumerator = routineGroups.GetEnumerator();
         }
 
-        public void Start(CoroutineGroup group, IEnumerator routine)
+        public void Run(CoroutineGroup group, IEnumerator routine)
         {
             LinkedList<IEnumerator> routines;
             if (routineGroups.TryGetValue(group, out routines) == false)
