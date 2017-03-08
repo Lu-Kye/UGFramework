@@ -29,10 +29,19 @@ namespace UGFramework
 					GameObject go = new GameObject(typeof(T).Name); 
 					go.transform.SetParent(singleTonRoot.transform);
 					instance = go.AddComponent<T>();	
+					instance.Ctor();
 				}
 
 				return instance;
 			}
+		}
+
+		protected virtual void Ctor()
+		{
+		}
+
+		public virtual void Dispose()
+		{
 		}
 	}
 }

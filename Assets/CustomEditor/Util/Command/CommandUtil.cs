@@ -7,9 +7,7 @@ namespace UGFramework
 {
 	/**
 	 * --- DOC BEGIN ---
-	 * # 命令行调用工具
-	 * - 执行shell
-	 * - 执行python
+	 * An executor for external command tools like python, shell, bat and so on.
 	 * --- DOC END ---
 	 */ 
 	public class CommandUtil 
@@ -80,7 +78,7 @@ namespace UGFramework
 		/**
 		 * --- DOC BEGIN ---
 		 * ## Note
-		 * 需要给予shell脚本执行权限
+		 * Give the execute access to the shell file.
 		 * --- DOC END ---
 		 */ 
 		public static Result ExecuteShell(string shellFile, string arguments = null)
