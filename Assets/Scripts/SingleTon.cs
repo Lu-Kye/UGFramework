@@ -2,6 +2,25 @@
 
 namespace UGFramework
 {
+	public class SingleTonRoot : MonoBehaviour
+	{
+		static SingleTonRoot _instance;
+		public static SingleTonRoot Instance
+		{
+			get
+			{
+				if (_instance == null)
+				{
+					var go = new GameObject("SingleTon");
+					_instance = go.AddComponent<SingleTonRoot>();
+					GameObject.DontDestroyOnLoad(go);
+				}
+
+				return _instance;
+			}
+		}
+	}
+
 	/**
 	 * --- DOC BEGIN ---
 	 * All singleTon class have to extend MonoBehaviour
@@ -11,23 +30,15 @@ namespace UGFramework
 	public class SingleTon<T> : MonoBehaviour 
 		where T : SingleTon<T>
 	{
-		static GameObject singleTonRoot = null;
-
 		static T instance = null;
 		public static T Instance
 		{
 			get
 			{
-				if (singleTonRoot == null)
-				{
-					singleTonRoot = new GameObject("SingleTon");
-					GameObject.DontDestroyOnLoad(singleTonRoot);
-				}
-
 				if (instance == null)
 				{
 					GameObject go = new GameObject(typeof(T).Name); 
-					go.transform.SetParent(singleTonRoot.transform);
+					go.transform.SetParent(SingleTonRoot.Instance.transform);
 					instance = go.AddComponent<T>();	
 					instance.Ctor();
 				}

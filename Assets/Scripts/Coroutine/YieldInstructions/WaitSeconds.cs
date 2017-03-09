@@ -1,3 +1,5 @@
+using UnityEngine;
+
 namespace UGFramework.Coroutine
 {
     /**
@@ -7,6 +9,29 @@ namespace UGFramework.Coroutine
      */
     public class WaitSeconds : YieldInstruction
     {
-        public float Seconds { get; set; }
+        public override Status Status
+        {
+            get
+            {
+                if (_seconds >= this.Seconds)
+                    return Status.FINISH;
+
+                return Status.WAITING;
+            }
+        }
+
+        public float Seconds { get; private set; }
+        float _seconds = 0;
+
+        public WaitSeconds(float seconds)
+        {
+            this.Seconds = seconds;            
+        }
+
+        public override void LateUpdate()
+        {
+            base.LateUpdate();    
+            _seconds += Time.deltaTime;
+        }
     }
 }

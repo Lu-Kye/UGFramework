@@ -1,24 +1,22 @@
 namespace UGFramework.Coroutine
 {
-    public enum YieldStatus
-    {
-        NULL,
-        WAITING,
-        END,
-    }
-
     /**
      * --- DOC BEGIN ---
      * Base class of yield classes, like *WaitSeconds*, *WaitWWW*
      * --- DOC END ---
      */
-    public class YieldInstruction
+    public abstract class YieldInstruction
     {
-        public YieldStatus Status { get; protected set; }
-
-        public void LateUpdate()
+        public virtual Status Status
         {
-            this.Status = YieldStatus.END;
+            get 
+            { 
+                return Status.NULL;
+            }
+        }
+
+        public virtual void LateUpdate()
+        {
         }
     }
 }

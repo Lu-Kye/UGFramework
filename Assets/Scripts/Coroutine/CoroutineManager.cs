@@ -20,6 +20,11 @@ namespace UGFramework.Coroutine
             base.Ctor();
         }
 
+        /**
+         * --- DOC BEGIN ---
+         * Run coroutine before *LateUpdate*
+         * --- DOC END ---
+         */
         public Coroutine Run(IEnumerator routine, CoroutineGroup group = null)
         {
             if (group == null)
@@ -70,7 +75,7 @@ namespace UGFramework.Coroutine
                 do {
 
                     var coroutine = coroutineNode.Value;
-                    if (coroutine.State.IsEnd)
+                    if (coroutine.IsEnd)
                     {
                         this.Remove(coroutine);
                         continue;

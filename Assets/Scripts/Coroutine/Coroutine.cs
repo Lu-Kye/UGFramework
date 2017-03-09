@@ -1,5 +1,5 @@
+using System;
 using System.Collections;
-using UnityEngine;
 using UGFramework.Pool;
 
 namespace UGFramework.Coroutine
@@ -14,48 +14,6 @@ namespace UGFramework.Coroutine
         END = BREAK | FINISH,
     }
 
-    public class State 
-    {
-        public Coroutine Coroutine { get; set; }
-        public Status Status { get; private set; }
-
-        public bool IsEnd { get { return ((int)this.Status & (int)Status.END) == 1; } }
-
-        public void Dispose()
-        {
-            this.Status = Status.NULL;
-        }
-
-        public void LateUpdate()
-        {
-            if (IsEnd)
-                return;
-
-            bool iterEnd = this.Coroutine.Routine.MoveNext();
-            if (iterEnd)
-            {
-                Status = Status.FINISH;
-                return;
-            }
-
-            var routine = this.Coroutine.Routine.Current;
-            if (routine == null) 
-            {
-                Status = Status.BREAK;
-                return;
-            }
-
-            if (routine is WaitForSeconds 
-                || routine is WaitForFixedUpdate
-                )
-            {
-                Status = Status.WAITING;
-                var waitForSeconds = routine as WaitForSeconds;
-                
-            }
-        }
-    }
-
     /**
      * --- DOC BEGIN ---
      * --- DOC END ---
@@ -64,24 +22,66 @@ namespace UGFramework.Coroutine
     {
         public CoroutineGroup Group { get; set; }
         public IEnumerator Routine { get; set; }
-        public State State { get; private set; }
+
+        public Status Status { get; private set; }
+        public bool IsEnd { get { return ((int)this.Status & (int)Status.END) == 1; } }
+
+        bool _started = false;
+        bool _routineEnd = false;
 
         public Coroutine(CoroutineGroup group, IEnumerator routine)
         {
             this.Group = group;
             this.Routine = routine;    
-            this.State = new State();
+        }
+
+        public void Init() { this.Next(); this.UpdateStatus(); }
+        public void Dispose() { this.Status = Status.NULL; _started = false; _routineEnd = false; }
+
+        void Next()
+        {
+            _routineEnd = this.Routine.MoveNext();
+        }
+
+        void UpdateStatus()
+        {
+            if (_routineEnd)
+            {
+                Status = Status.FINISH;
+                return;
+            }
+
+            var routine = this.Routine.Current as YieldInstruction;
+            if (routine == null) 
+            {
+                Status = Status.BREAK;
+                return;
+            }
+
+            Status = routine.Status;
         }
 
         public void LateUpdate()
         {
-            if (this.State.IsEnd)
+            if (this.IsEnd)
                 return;
-            this.Routine.MoveNext();
-            this.State.LateUpdate();
-        }
+            
+            if (this.Routine.Current is YieldInstruction == false)
+            {
+                throw new Exception(string.Format("Unkown class({0}), coroutine must return YieldInstruction!", this.Routine.Current.GetType().FullName));
+            }
 
-        public void Init() { this.State.LateUpdate(); }
-        public void Dispose() { this.State.Dispose(); }
+            // LateUpdate routine
+            var routine = this.Routine.Current as YieldInstruction;
+            if (_started == false)
+                _started = true;
+            else
+                routine.LateUpdate();
+
+            if (routine.Status == Status.FINISH)
+                this.Next();
+
+            this.UpdateStatus();
+        }
     }
 }
