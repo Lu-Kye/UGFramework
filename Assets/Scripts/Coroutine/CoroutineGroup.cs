@@ -1,4 +1,4 @@
-namespace UGFramework
+namespace UGFramework.Coroutine
 {
     /**
      * --- DOC BEGIN ---
@@ -7,6 +7,15 @@ namespace UGFramework
      */
     public class CoroutineGroup
     {
+       /**
+        * --- DOC BEGIN ---
+        * CoroutineGroup can only be allocated in current and derived class.
+        * --- DOC END ---
+        */
+        protected CoroutineGroup() {}
+
+        public static readonly CoroutineGroup DEFAULT = new CoroutineGroup();
+
         public static readonly CoroutineGroup UGFRAMEWORK = new CoroutineGroup();
     }
 }

@@ -9,7 +9,7 @@ namespace UGFramework
 		[MenuItem(UGFramework.EditorMenu.SidebarConfig.EXAMPLES + "/CommandUtil/TestShell")]
 		public static void TestShell()
 		{
-			CommandUtil.ExecuteShell(TEST_FILE_PATH);			
+			CommandUtil.ExecuteShell(TEST_FILE_PATH);
 		}
 	}
 }

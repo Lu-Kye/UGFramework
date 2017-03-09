@@ -1,7 +1,7 @@
 ﻿using UnityEngine;
 using System;
 
-namespace MeshFactory
+namespace UGFramework.MeshFactory
 {
 	public class PolygonPlane : AbstractMesh<PolygonPlaneConfig>
 	{
