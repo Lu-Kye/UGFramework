@@ -5,7 +5,7 @@ namespace UGFramework.EditorMenu
      * Custom sidebar menu configuration
 	 * --- DOC END ---
 	 */ 
-    public class SidebarConfig
+    public class TopbarConfig
     {
         public const string ROOT = "UGFramework";
         public const string EXAMPLES = ROOT + "/Examples";
