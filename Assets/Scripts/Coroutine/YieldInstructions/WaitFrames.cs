@@ -9,7 +9,7 @@ namespace UGFramework.Coroutine
                 if (_frames >= this.Frames)
                     return Status.FINISH;
 
-                return Status.WAITING;
+                return Status.RUNNING;
             }
         }
 

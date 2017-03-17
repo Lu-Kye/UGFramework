@@ -9,11 +9,14 @@ namespace UGFramework.Coroutine
     {
         public Coroutine Coroutine { get; set; }
 
+        /**
+         * FINISH or RUNNING
+         */
         public virtual Status Status
         {
             get 
             { 
-                return Status.NULL;
+                return Status.FINISH;
             }
         }
 

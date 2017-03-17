@@ -177,7 +177,7 @@ public class AssetUsageDetector : EditorWindow
 	private const BindingFlags PROPERTY_MODIFIERS = BindingFlags.Instance | BindingFlags.Public;
 
 	// Add menu named "Asset Usage Detector" to the Util menu
-	[MenuItem(UGFramework.EditorMenu.TopbarConfig.THIRDPARTY + "/AssetUsageDetector" )]
+	[MenuItem(UGFramework.Editor.TopbarConfig.THIRDPARTY + "/AssetUsageDetector" )]
 	static void Init()
 	{
 		// Get existing open window or if none, make a new one

@@ -20,7 +20,7 @@ namespace UGFramework.Coroutine
                 if (WWW.isDone)
                     return Status.FINISH;
                 
-                return Status.WAITING;
+                return Status.RUNNING;
             }
         }
 

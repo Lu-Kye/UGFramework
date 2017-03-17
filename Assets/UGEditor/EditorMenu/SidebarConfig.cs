@@ -1,4 +1,4 @@
-namespace UGFramework.EditorMenu
+namespace UGFramework.Editor
 {
 	/**
 	 * --- DOC BEGIN ---

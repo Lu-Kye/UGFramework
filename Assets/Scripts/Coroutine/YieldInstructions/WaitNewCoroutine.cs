@@ -11,7 +11,9 @@ namespace UGFramework.Coroutine
         {
             get
             {
-                return _coroutine.Status;
+                if (_coroutine.IsRunning)
+                    return Status.RUNNING;
+                return Status.FINISH;
             }
         }
 
@@ -27,7 +29,7 @@ namespace UGFramework.Coroutine
                 _coroutine = new Coroutine(this.Coroutine.Group, _routine);
                 _coroutine.Init();
             }
-            else if (_coroutine.IsEnd == false)
+            else if (_coroutine.IsRunning)
             {
                 _coroutine.LateUpdate();
             }

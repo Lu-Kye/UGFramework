@@ -6,12 +6,9 @@ namespace UGFramework.Coroutine
 {
     public enum Status
     {
-        NULL = 1 << 0,
-        WAITING = 1 << 1,
-        BREAK = 1 << 2,
-        FINISH = 1 << 3,
-
-        END = BREAK | FINISH,
+        RUNNING,
+        BREAK,
+        FINISH,
     }
 
     /**
@@ -26,7 +23,8 @@ namespace UGFramework.Coroutine
         public int CreatedFrameCount { get; private set; }
 
         public Status Status { get; private set; }
-        public bool IsEnd { get { return ((int)this.Status & (int)Status.END) == 1; } }
+
+        public bool IsRunning { get { return this.Status == Status.RUNNING; } }
 
         bool _noRoutine = false;
 
@@ -42,7 +40,7 @@ namespace UGFramework.Coroutine
             this.Next(); 
             this.UpdateStatus(); 
         }
-        public void Dispose() { this.Status = Status.NULL; _noRoutine = false; }
+        public void Dispose() { _noRoutine = false; }
 
         void Next()
         {
@@ -72,7 +70,7 @@ namespace UGFramework.Coroutine
 
         public void LateUpdate()
         {
-            if (this.IsEnd)
+            if (!this.IsRunning)
                 return;
             
             if (this.Routine.Current is YieldInstruction == false)

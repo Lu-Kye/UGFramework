@@ -70,9 +70,8 @@ namespace UGFramework.Coroutine
 
                 var coroutineNode = coroutines.First;
                 do {
-
                     var coroutine = coroutineNode.Value;
-                    if (coroutine.IsEnd)
+                    if (coroutine.IsRunning == false)
                     {
                         this.Remove(coroutine);
                         continue;

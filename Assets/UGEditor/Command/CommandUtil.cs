@@ -1,9 +1,8 @@
-﻿using UnityEngine;
-using System.Diagnostics;
+﻿using System.Diagnostics;
 using System.Text;
 using UnityEditor;
 
-namespace UGFramework
+namespace UGFramework.Editor
 {
 	/**
 	 * --- DOC BEGIN ---
@@ -12,7 +11,7 @@ namespace UGFramework
 	 */ 
 	public class CommandUtil 
 	{
-		public static string Root = Application.dataPath.Replace("Assets", "");
+		public static string Root = Path.UGRoot;
 
 		public class Result
 		{
@@ -83,7 +82,7 @@ namespace UGFramework
 		 */ 
 		public static Result ExecuteShell(string shellFile, string arguments = null)
 		{
-			return Execute(Root + shellFile, arguments);  	
+			return Execute(Root + "/" + shellFile, arguments);  	
 		}
 	}
 }

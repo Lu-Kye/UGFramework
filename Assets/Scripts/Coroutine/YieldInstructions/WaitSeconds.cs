@@ -16,7 +16,7 @@ namespace UGFramework.Coroutine
                 if (_seconds >= this.Seconds)
                     return Status.FINISH;
 
-                return Status.WAITING;
+                return Status.RUNNING;
             }
         }
 
