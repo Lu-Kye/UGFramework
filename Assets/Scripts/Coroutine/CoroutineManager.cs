@@ -13,9 +13,9 @@ namespace UGFramework.Coroutine
     {
         public int _currentFrameCount = -1;
 
-        Dictionary<CoroutineGroup, LinkedList<Coroutine>> coroutineGroups = new Dictionary<CoroutineGroup,LinkedList<Coroutine>>();
+        Dictionary<CoroutineGroup, LinkedList<Coroutine>> _coroutineGroups = new Dictionary<CoroutineGroup,LinkedList<Coroutine>>();
 
-        HashSet<Coroutine> removingCoroutines = new HashSet<Coroutine>();
+        HashSet<Coroutine> _removingCoroutines = new HashSet<Coroutine>();
 
         protected override void Ctor()
         {
@@ -33,10 +33,10 @@ namespace UGFramework.Coroutine
                 group = CoroutineGroup.DEFAULT;
 
             LinkedList<Coroutine> coroutines;
-            if (this.coroutineGroups.TryGetValue(group, out coroutines) == false)
+            if (this._coroutineGroups.TryGetValue(group, out coroutines) == false)
             {
                 coroutines = new LinkedList<Coroutine>();
-                this.coroutineGroups[group] = coroutines;
+                this._coroutineGroups[group] = coroutines;
             }
 
             // var coroutine = new Coroutine(group, routine);
@@ -53,23 +53,26 @@ namespace UGFramework.Coroutine
 
         bool Remove(Coroutine coroutine)
         {
-            if (this.removingCoroutines.Contains(coroutine))
+            if (this._removingCoroutines.Contains(coroutine))
                 return false;
 
-            this.removingCoroutines.Add(coroutine);
+            this._removingCoroutines.Add(coroutine);
             return true;
         }
 
         void LateUpdate()
         {
-            var coroutineGroupsIter = this.coroutineGroups.GetEnumerator();
+            var coroutineGroupsIter = this._coroutineGroups.GetEnumerator();
             while (coroutineGroupsIter.MoveNext())
             {
                 var coroutineGroupPair = coroutineGroupsIter.Current;
                 var coroutines = coroutineGroupPair.Value;  
+                if (coroutines.Count == 0)
+                    continue;
 
                 var coroutineNode = coroutines.First;
                 do {
+
                     var coroutine = coroutineNode.Value;
                     if (coroutine.IsRunning == false)
                     {
@@ -88,14 +91,14 @@ namespace UGFramework.Coroutine
         void Update()
         {
             // Remove finished coroutines
-            if (this.removingCoroutines.Count <= 0)
+            if (this._removingCoroutines.Count <= 0)
                 return;
 
-            var removingCoroutinesIter = this.removingCoroutines.GetEnumerator();
+            var removingCoroutinesIter = this._removingCoroutines.GetEnumerator();
             while (removingCoroutinesIter.MoveNext()) 
             {
                 var removingCoroutine = removingCoroutinesIter.Current;
-                var coroutineGroup = this.coroutineGroups[removingCoroutine.Group];
+                var coroutineGroup = this._coroutineGroups[removingCoroutine.Group];
 
                 coroutineGroup.Remove(removingCoroutine);
 

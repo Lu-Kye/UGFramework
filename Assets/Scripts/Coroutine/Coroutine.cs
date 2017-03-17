@@ -33,6 +33,7 @@ namespace UGFramework.Coroutine
             this.Group = group;
             this.Routine = routine;    
             this.CreatedFrameCount = UnityEngine.Time.frameCount;
+            this.Status = Status.RUNNING;
         }
 
         public void Init() 
@@ -40,13 +41,18 @@ namespace UGFramework.Coroutine
             this.Next(); 
             this.UpdateStatus(); 
         }
-        public void Dispose() { _noRoutine = false; }
+        public void Dispose() { this.Status = Status.RUNNING; _noRoutine = false; }
 
         void Next()
         {
             // LogManager.Instance.Debug("Routine is null({0}) frame({1})", this.Routine.Current == null, UnityEngine.Time.frameCount);
-            _noRoutine = this.Routine.MoveNext();
+            _noRoutine = !this.Routine.MoveNext();
+            if (_noRoutine)
+                return;
+
             var routine = this.Routine.Current as YieldInstruction;
+            if (routine == null)
+                return;
             routine.Coroutine = this; 
         }
 

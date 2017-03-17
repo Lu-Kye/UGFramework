@@ -11,7 +11,7 @@ namespace UGFramework.Coroutine
         {
             get
             {
-                if (_coroutine.IsRunning)
+                if (_coroutine == null || _coroutine.IsRunning)
                     return Status.RUNNING;
                 return Status.FINISH;
             }
