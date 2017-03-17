@@ -8,6 +8,10 @@ namespace UGFramework.Pool
      */
     public class ObjectPool : SingleTon<ObjectPool>
     {
+        public void PreAlloc<T>(uint count, params object[] args)
+        {
+        }
+
         public T Alloc<T>(params object[] args)
             where T : class, IObject
         {

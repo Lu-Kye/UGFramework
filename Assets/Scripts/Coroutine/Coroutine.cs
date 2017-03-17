@@ -23,29 +23,38 @@ namespace UGFramework.Coroutine
         public CoroutineGroup Group { get; set; }
         public IEnumerator Routine { get; set; }
 
+        public int CreatedFrameCount { get; private set; }
+
         public Status Status { get; private set; }
         public bool IsEnd { get { return ((int)this.Status & (int)Status.END) == 1; } }
 
-        bool _started = false;
-        bool _routineEnd = false;
+        bool _noRoutine = false;
 
         public Coroutine(CoroutineGroup group, IEnumerator routine)
         {
             this.Group = group;
             this.Routine = routine;    
+            this.CreatedFrameCount = UnityEngine.Time.frameCount;
         }
 
-        public void Init() { this.Next(); this.UpdateStatus(); }
-        public void Dispose() { this.Status = Status.NULL; _started = false; _routineEnd = false; }
+        public void Init() 
+        { 
+            this.Next(); 
+            this.UpdateStatus(); 
+        }
+        public void Dispose() { this.Status = Status.NULL; _noRoutine = false; }
 
         void Next()
         {
-            _routineEnd = this.Routine.MoveNext();
+            // LogManager.Instance.Debug("Routine is null({0}) frame({1})", this.Routine.Current == null, UnityEngine.Time.frameCount);
+            _noRoutine = this.Routine.MoveNext();
+            var routine = this.Routine.Current as YieldInstruction;
+            routine.Coroutine = this; 
         }
 
         void UpdateStatus()
         {
-            if (_routineEnd)
+            if (_noRoutine)
             {
                 Status = Status.FINISH;
                 return;
@@ -73,10 +82,7 @@ namespace UGFramework.Coroutine
 
             // LateUpdate routine
             var routine = this.Routine.Current as YieldInstruction;
-            if (_started == false)
-                _started = true;
-            else
-                routine.LateUpdate();
+            routine.LateUpdate();
 
             if (routine.Status == Status.FINISH)
                 this.Next();

@@ -7,6 +7,8 @@ namespace UGFramework.Coroutine
      */
     public abstract class YieldInstruction
     {
+        public Coroutine Coroutine { get; set; }
+
         public virtual Status Status
         {
             get 

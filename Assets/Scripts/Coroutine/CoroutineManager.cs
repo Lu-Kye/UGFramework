@@ -11,6 +11,8 @@ namespace UGFramework.Coroutine
      */
     public class CoroutineManager : SingleTon<CoroutineManager> 
     {
+        public int _currentFrameCount = -1;
+
         Dictionary<CoroutineGroup, LinkedList<Coroutine>> coroutineGroups = new Dictionary<CoroutineGroup,LinkedList<Coroutine>>();
 
         HashSet<Coroutine> removingCoroutines = new HashSet<Coroutine>();
@@ -22,7 +24,7 @@ namespace UGFramework.Coroutine
 
         /**
          * --- DOC BEGIN ---
-         * Run coroutine before *LateUpdate*
+         * Coroutine will be executed in *LateUpdate*
          * --- DOC END ---
          */
         public Coroutine Run(IEnumerator routine, CoroutineGroup group = null)
@@ -58,11 +60,6 @@ namespace UGFramework.Coroutine
             return true;
         }
 
-        /**
-         * --- DOC BEGIN ---
-         * Coroutine will be executed after *Update()*  
-         * --- DOC END ---
-         */
         void LateUpdate()
         {
             var coroutineGroupsIter = this.coroutineGroups.GetEnumerator();
@@ -80,10 +77,13 @@ namespace UGFramework.Coroutine
                         this.Remove(coroutine);
                         continue;
                     }
-                    coroutine.LateUpdate();
+                    if (this._currentFrameCount >= coroutine.CreatedFrameCount)
+                        coroutine.LateUpdate();
 
                 } while ((coroutineNode = coroutineNode.Next) != null);
             }
+
+            this._currentFrameCount = UnityEngine.Time.frameCount;
         }
 
         void Update()

@@ -19,6 +19,10 @@ namespace UGFramework.Coroutine
 
         public WaitFrames(uint frames)
         {
+            if (frames == 0)
+            {
+                throw new System.Exception("There is no meaning for waiting 0 frame, cause waiting 0 frame is same as waiting 1 frame!");
+            }
             this.Frames = frames;
         }
 
