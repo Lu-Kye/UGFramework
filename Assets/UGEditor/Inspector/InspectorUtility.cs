@@ -1,23 +1,34 @@
+using UnityEngine;
+using UnityEditor;
+
 namespace UGFramework.Editor.Inspector
 {
+    /**
+     * --- DOC BEGIN ---
+     * Custom inspector utility, draw fields in *Inspector*
+     * --- DOC END ---
+     */
     public static class InspectorUtility
     {
-        public static void DrawObject(object obj)
+        public static bool DrawObject(object obj, GUIContent content = null)
         {
-            ObjectDrawer.Draw(obj);
+            return ObjectDrawer.Draw(obj, content);
         }
 
-        public static bool DrawObjectWritable(object obj)
+        public static bool DrawMember(MemberInfo info)
         {
-            return ObjectDrawer.DrawWritable(obj);
+            if (info.Type == typeof(int))
+            {
+                var value = info.GetInt();
+                var changed = DrawInt(ref value, new GUIContent(info.Name));
+            }
+
+            return false;
         }
 
-        public static void DrawInt()
+        public static bool DrawInt(ref int value, GUIContent content)
         {
-        }
-
-        public static bool DrawIntWritable()
-        {
+            EditorGUILayout.IntField(content, value);
             return false;
         }
     }
