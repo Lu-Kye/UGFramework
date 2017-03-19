@@ -8,6 +8,23 @@ namespace UGFramework.Editor.Inspector
 
         public string Name { get { return this.Info.Name; } }
 
+        public string Tooltip { get; set; }
+
+        /**
+         * Private field and properties are readonly
+         */
+        public bool IsReadonly 
+        {
+            get
+            {
+                if (this.IsField)
+                {
+                    return this.FieldInfo.IsPublic == false;
+                }
+                return true;
+            }
+        }
+
         public System.Type Type
         {
             get
@@ -37,6 +54,10 @@ namespace UGFramework.Editor.Inspector
             this.Target = target;
             this.FieldInfo = info;
             this.PropertyInfo = null;
+
+            var attributes = info.GetCustomAttributes(typeof(InspectorTooltip), false);
+            var attribute = attributes.Length > 0 ? attributes[0] as InspectorTooltip : null;
+            this.Tooltip = attribute != null ? attribute.Tooltip : info.Name;
         }
 
         public MemberInfo(object target, SR.PropertyInfo info)            
@@ -44,18 +65,22 @@ namespace UGFramework.Editor.Inspector
             this.Target = target;
             this.FieldInfo = null;
             this.PropertyInfo = info;
+
+            var attributes = info.GetCustomAttributes(typeof(InspectorTooltip), false);
+            var attribute = attributes.Length > 0 ? attributes[0] as InspectorTooltip : null;
+            this.Tooltip = attribute != null ? attribute.Tooltip : info.Name;
         }
 
         public T GetValue<T>()
         {
             if (this.IsField)
                 return (T)this.FieldInfo.GetValue(this.Target);
-            return (T)this.PropertyInfo.GetGetMethod().Invoke(this.Target, null);
+            return (T)this.PropertyInfo.GetGetMethod(true).Invoke(this.Target, null);
         }
 
-        public int GetInt()
+        public void SetValue(object value)
         {
-            return this.GetValue<int>();
+            this.FieldInfo.SetValue(this.Target, value);
         }
     }
 }

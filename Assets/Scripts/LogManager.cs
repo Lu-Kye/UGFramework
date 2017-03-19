@@ -1,6 +1,4 @@
-﻿using UnityEngine;
-
-namespace UGFramework
+﻿namespace UGFramework
 {
 	/**
 	 * --- DOC BEGIN ---
@@ -11,6 +9,11 @@ namespace UGFramework
 		public void Debug(string format, params object[] args)
 		{
 			UnityEngine.Debug.Log(string.Format(format, args));
+		}
+
+		public void Error(string format, params object[] args)
+		{
+			UnityEngine.Debug.LogError(string.Format(format, args));	
 		}
 	}
 }

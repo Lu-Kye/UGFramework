@@ -1,6 +1,6 @@
 using UnityEditor;
 
-namespace UGFramework.Editor
+namespace UGFramework.Editor.Inspector
 {
     [CustomEditor(typeof(InspectorExample))]
     public class InspectorExampleEditor : InspectorEditor<InspectorExample>

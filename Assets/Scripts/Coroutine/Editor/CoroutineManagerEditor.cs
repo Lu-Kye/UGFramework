@@ -1,5 +1,5 @@
 using UnityEditor;
-using UGFramework.Editor;
+using UGFramework.Editor.Inspector;
 
 namespace UGFramework.Coroutine
 {
