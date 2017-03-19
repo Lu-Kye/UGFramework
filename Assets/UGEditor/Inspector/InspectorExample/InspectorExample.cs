@@ -9,12 +9,9 @@ namespace UGFramework.Editor.Inspector
     {
         public int TestInt = 1;     
         public uint TestUInt = 1;     
+        public float TestFloat = 1.5f;
 
         [InspectorTooltip("Test")]
-        [ShowInInspector]
-        private int TestInspectorAccessible = 1;
-        private int TestInspectorAccessibleUnaccessible = 1;
-
         [ShowInInspector]
         int TestPropertyPrivate { get; set; }
 
@@ -33,5 +30,12 @@ namespace UGFramework.Editor.Inspector
         public TestObjectClass TestObject = new TestObjectClass();
 
         public double TestUnsupport = 0.1;
+
+        public enum TestEnumDef
+        {
+            Enum1,
+            Enum2,
+        }
+        public TestEnumDef TestEnum;
     }
 }

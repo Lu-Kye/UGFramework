@@ -1,3 +1,6 @@
+#pragma warning disable
+
+using System;
 using UnityEngine;
 
 namespace UGFramework.Editor.Inspector
@@ -29,27 +32,56 @@ namespace UGFramework.Editor.Inspector
 
             var changed = false;
 
-            // Int
-            if (info.Type == typeof(int))
+            if (info.Type.IsValueType)
+            {
+                // Int
+                if (info.Type == typeof(int))
+                {
+                    if (check)
+                        return false;
+
+                    var value = info.GetValue<int>();
+                    changed = InspectorUtility.DrawInt(ref value, content);
+                    if (changed && info.IsReadonly == false)
+                        info.SetValue(value);
+                }
+                // Uint
+                else if (info.Type == typeof(uint))
+                {
+                    if (check)
+                        return false;
+
+                    var value = (int)info.GetValue<uint>();
+                    changed = InspectorUtility.DrawInt(ref value, content);
+                    if (changed && info.IsReadonly == false)
+                        info.SetValue((uint)Mathf.Max(0, value));
+                }
+                // Float
+                else if (info.Type == typeof(float))
+                {
+                    if (check)
+                        return false;
+                    
+                    var value = info.GetValue<float>();
+                    changed = InspectorUtility.DrawFloat(ref value, content);
+                    if (changed && info.IsReadonly == false)
+                        info.SetValue(value);
+                }
+                else
+                {
+                    throw new Exception();
+                }
+            }
+            // Enum
+            else if (info.Type.IsEnum)
             {
                 if (check)
                     return false;
-
-                var value = info.GetValue<int>();
-                changed = InspectorUtility.DrawInt(ref value, content);
+                
+                var value = info.GetValue<Enum>();
+                changed = InspectorUtility.DrawEnum(ref value, content);
                 if (changed && info.IsReadonly == false)
                     info.SetValue(value);
-            }
-            // Uint
-            else if (info.Type == typeof(uint))
-            {
-                if (check)
-                    return false;
-
-                var value = (int)info.GetValue<uint>();
-                changed = InspectorUtility.DrawInt(ref value, content);
-                if (changed && info.IsReadonly == false)
-                    info.SetValue((uint)Mathf.Max(0, value));
             }
             // Class
             else if (info.Type.IsClass)
@@ -62,7 +94,7 @@ namespace UGFramework.Editor.Inspector
             }
             else
             {
-                throw new System.Exception(string.Format("Unsupport type {0}", info.Type.Name));
+                throw new Exception();
             }
 
             return changed;

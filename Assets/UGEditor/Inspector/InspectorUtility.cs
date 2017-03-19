@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEditor;
@@ -59,6 +60,7 @@ namespace UGFramework.Editor.Inspector
             return ObjectDrawer.Draw(obj, content);
         }
 
+#region value types
         public static bool DrawInt(ref int value, GUIContent content)
         {
             var nextValue = EditorGUILayout.IntField(content, value);
@@ -66,5 +68,22 @@ namespace UGFramework.Editor.Inspector
             value = nextValue;
             return changed;
         }
+
+        public static bool DrawFloat(ref float value, GUIContent content)
+        {
+            var nextValue = EditorGUILayout.FloatField(content, value);
+            var changed = value != nextValue;
+            value = nextValue;
+            return changed;
+        }
+
+        public static bool DrawEnum(ref Enum value, GUIContent content)
+        {
+            var nextValue = EditorGUILayout.EnumPopup(content, value);
+            var changed = value != nextValue;
+            value = nextValue;
+            return changed;
+        }
+#endregion
     }
 }
