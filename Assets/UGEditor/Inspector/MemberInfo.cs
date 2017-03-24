@@ -19,6 +19,11 @@ namespace UGFramework.Editor.Inspector
             {
                 if (this.IsField)
                 {
+                    var attributes = this.Info.GetCustomAttributes(typeof(ShowInInspector), false);
+                    var attribute = attributes.Length > 0 ? attributes[0] as ShowInInspector : null;
+                    if (attribute != null && attribute.IsReadonly)
+                        return true;
+
                     return this.FieldInfo.IsPublic == false;
                 }
                 return true;
@@ -32,6 +37,14 @@ namespace UGFramework.Editor.Inspector
                 if (this.IsField)
                     return this.FieldInfo.FieldType;
                 return this.PropertyInfo.PropertyType;
+            }
+        }
+
+        public bool IsCollection 
+        {
+            get
+            {
+                return this.Type.GetInterface("IEnumerable") != null;
             }
         }
 
@@ -80,7 +93,12 @@ namespace UGFramework.Editor.Inspector
 
         public void SetValue(object value)
         {
-            this.FieldInfo.SetValue(this.Target, value);
+            if (this.IsField)
+                this.FieldInfo.SetValue(this.Target, value);
+
+            // if (this.PropertyInfo.GetSetMethod(true) != null)
+            //     this.PropertyInfo.SetValue(this.Target, value, null);
+            return;
         }
     }
 }

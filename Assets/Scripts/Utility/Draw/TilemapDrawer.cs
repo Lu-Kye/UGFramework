@@ -2,7 +2,8 @@
 
 public class TilemapDrawer : MonoBehaviour
 {
-	public static TilemapDrawer Create(int[][] tilemap, Vector3 startPos, float xTileWidth, float yTileWidth)
+	// If your tilemap is not x-z plane, you can change gameObject.transform.rotation
+	public static TilemapDrawer Create(int[][] tilemap, Vector3 startPos, float xTileWidth, float zTileWidth)
 	{
 		var go = new GameObject("TilemapDrawer");
 		var drawer = go.AddComponent<TilemapDrawer>();
@@ -10,7 +11,7 @@ public class TilemapDrawer : MonoBehaviour
 		drawer.Tilemap = tilemap;
 		drawer.transform.position = startPos;
 		drawer.XTileWidth = xTileWidth;
-		drawer.ZTileWidth = yTileWidth;
+		drawer.ZTileWidth = zTileWidth;
 
 		return drawer;
 	}
@@ -25,7 +26,9 @@ public class TilemapDrawer : MonoBehaviour
 	 */
 	public int[][] Tilemap { get; set; }
 
+	// XTileWidth can be positive or negative
 	public float XTileWidth { get; set; }
+	// ZTileWidth can be positive or negative
 	public float ZTileWidth { get; set; }
 
 	float _spaceBetweenRects = 0.2f;
@@ -41,18 +44,32 @@ public class TilemapDrawer : MonoBehaviour
 		}
 	}
 
-	// Color _lineColor = new Color(Color.green.r, Color.green.g, Color.green.b, Color.green.a * 0.5f);
-	// public Color LineColor 
-	// {
-	// 	get
-	// 	{
-	// 		return _lineColor;
-	// 	}
-	// 	set
-	// 	{
-	// 		_lineColor = value;
-	// 	}
-	// }
+	bool _drawLine = false;
+	public bool DrawLine
+	{
+		get
+		{
+			return _drawLine;
+		}
+		set
+		{
+			_drawLine = value;
+		}
+	}
+
+	Color _lineColor = Color.black;
+	public Color LineColor 
+	{
+		get
+		{
+			return _lineColor;
+		}
+		set
+		{
+			_lineColor = value;
+		}
+	}
+
 	Color _enableColor = Color.green;
 	public Color EnableColor 
 	{
@@ -111,28 +128,31 @@ public class TilemapDrawer : MonoBehaviour
 		// match our transform
 		GL.MultMatrix(transform.localToWorldMatrix);
 
-		// Draw lines
-		// GL.Begin(GL.LINES);
-		// // Vertex colors change from red to green
-		// GL.Color(this.LineColor);
+		if (this.DrawLine)
+		{
+			// Draw lines
+			GL.Begin(GL.LINES);
+			// Vertex colors change from red to green
+			GL.Color(this.LineColor);
 
-		// // GL.Vertex3(0, 0, 0);
-		// // GL.Vertex3(1, 0, 0);
+			// GL.Vertex3(0, 0, 0);
+			// GL.Vertex3(1, 0, 0);
 
-		// // Draw z from start to end
-		// for (int x = 0; x < this.Tilemap.Length; ++x)
-		// {
-		// 	GL.Vertex3(x * this.XTileWidth, 0, 0);
-		// 	GL.Vertex3(x * this.XTileWidth, 0, (this.Tilemap[0].Length - 1) * this.ZTileWidth);	
-		// }
+			// Draw z from start to end
+			for (int x = 0; x < this.Tilemap.Length; ++x)
+			{
+				GL.Vertex3(x * this.XTileWidth, 0, 0);
+				GL.Vertex3(x * this.XTileWidth, 0, (this.Tilemap[0].Length - 1) * this.ZTileWidth);	
+			}
 
-		// // Draw x from start to end
-		// for (int z = 0; z < this.Tilemap[0].Length; ++z)
-		// {
-		// 	GL.Vertex3(0, 0, z * this.ZTileWidth);
-		// 	GL.Vertex3((this.Tilemap.Length - 1) * this.XTileWidth, 0, z * this.ZTileWidth);
-		// }
-		// GL.End();
+			// Draw x from start to end
+			for (int z = 0; z < this.Tilemap[0].Length; ++z)
+			{
+				GL.Vertex3(0, 0, z * this.ZTileWidth);
+				GL.Vertex3((this.Tilemap.Length - 1) * this.XTileWidth, 0, z * this.ZTileWidth);
+			}
+			GL.End();
+		}
 
 		// Draw rects
 		GL.Begin(GL.QUADS);

@@ -11,7 +11,7 @@ namespace UGFramework.Coroutine
      */
     public class CoroutineManager : SingleTon<CoroutineManager> 
     {
-        public int _currentFrameCount = -1;
+        int _currentFrameCount = -1;
 
         Dictionary<CoroutineGroup, LinkedList<Coroutine>> _coroutineGroups = new Dictionary<CoroutineGroup,LinkedList<Coroutine>>();
 

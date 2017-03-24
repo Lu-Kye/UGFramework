@@ -48,19 +48,18 @@ namespace UGFramework.Editor.Inspector
 
         public static bool CheckMember(MemberInfo info)
         {
-            return MemberDrawer.CheckMember(info);
+            return MemberDrawer.Check(info);
         }
         public static bool DrawMember(MemberInfo info, GUIContent content = null)
         {
-            return MemberDrawer.DrawMember(info, content);
+            return MemberDrawer.Draw(info, content);
         }
 
-        public static bool DrawObject(object obj, GUIContent content = null)
+        public static bool DrawObject(object value, GUIContent content = null)
         {
-            return ObjectDrawer.Draw(obj, content);
+            return ObjectDrawer.Draw(value, content);
         }
 
-#region value types
         public static bool DrawInt(ref int value, GUIContent content)
         {
             var nextValue = EditorGUILayout.IntField(content, value);
@@ -80,9 +79,23 @@ namespace UGFramework.Editor.Inspector
         public static bool DrawEnum(ref Enum value, GUIContent content)
         {
             var nextValue = EditorGUILayout.EnumPopup(content, value);
+            var changed = value.CompareTo(nextValue) != 0;
+            value = nextValue;
+            return changed;
+        }
+
+        public static bool DrawString(ref string value, GUIContent content)
+        {
+            var nextValue = EditorGUILayout.TextField(content, value);
             var changed = value != nextValue;
             value = nextValue;
             return changed;
+        }
+
+#region Collections
+        public static bool DrawHashSet(HashSet<object> value, GUIContent content)
+        {
+            return HashSetDrawer.Draw(value, content);
         }
 #endregion
     }

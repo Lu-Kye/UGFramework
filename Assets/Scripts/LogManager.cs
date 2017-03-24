@@ -1,19 +1,50 @@
-﻿namespace UGFramework
+﻿using UnityEngine;
+
+namespace UGFramework
 {
+	public enum LogLevel
+	{
+		DEBUG,
+		WARNING,
+		ERROR,
+		NONE,
+	}
+
+	public class LogIO
+	{
+	}
+
 	/**
 	 * --- DOC BEGIN ---
 	 * --- DOC END ---
 	 */ 
 	public class LogManager : SingleTon<LogManager> 
 	{
-		public void Debug(string format, params object[] args)
+#if UNITY_EDITOR
+		public LogLevel LogLevel = LogLevel.DEBUG;
+#else
+		public LogLevel LogLevel = LogLevel.ERROR;
+#endif
+
+		public void Log(string msg)
 		{
-			UnityEngine.Debug.Log(string.Format(format, args));
+			if (this.LogLevel > LogLevel.DEBUG)
+				return;
+			Debug.Log(msg);
 		}
 
-		public void Error(string format, params object[] args)
+		public void Warning(string msg)
 		{
-			UnityEngine.Debug.LogError(string.Format(format, args));	
+			if (this.LogLevel > LogLevel.WARNING)
+				return;
+			Debug.Log(msg);
+		}
+
+		public void Error(string msg)
+		{
+			if (this.LogLevel > LogLevel.ERROR)
+				return;
+			Debug.Log(msg);
 		}
 	}
 }

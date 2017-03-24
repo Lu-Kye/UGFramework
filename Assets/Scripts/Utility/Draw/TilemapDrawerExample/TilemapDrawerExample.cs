@@ -2,8 +2,6 @@
 
 public class TilemapDrawerExample : MonoBehaviour 
 {
-	TilemapDrawer tilemapDrawer;
-
 	void Awake()
 	{
 		// Ctor tilemap
@@ -20,16 +18,16 @@ public class TilemapDrawerExample : MonoBehaviour
 		}
 
 		// Init tilemap drawer
-		tilemapDrawer = TilemapDrawer.Create(
+		TilemapDrawer.Create(
 			tilemap,
 			Vector2.zero,
 			1,
 			1
 		);
 
-		tilemapDrawer.Tilemap[13][20] = 0;
-		tilemapDrawer.Tilemap[33][33] = 0;
-		tilemapDrawer.Tilemap[33][34] = 0;
-		tilemapDrawer.Tilemap[48][88] = 0;
+		tilemap[13][20] = 0;
+		tilemap[33][33] = 0;
+		tilemap[33][34] = 0;
+		tilemap[48][88] = 0;
 	}
 }

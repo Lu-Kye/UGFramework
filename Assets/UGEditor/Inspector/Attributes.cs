@@ -8,6 +8,22 @@ namespace UGFramework.Editor.Inspector
         AllowMultiple = false)]
     public class ShowInInspector : Attribute
     {
+        bool _isReadonly = false;
+        public bool IsReadonly 
+        { 
+            get
+            {
+                return _isReadonly;
+            }
+            set
+            {
+                _isReadonly = value;
+            }
+        }
+
+        public string ReferenceField { get; set; }
+
+        public ShowInInspector() {}
     }
 
     [AttributeUsageAttribute(

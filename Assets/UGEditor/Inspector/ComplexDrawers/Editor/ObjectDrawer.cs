@@ -12,9 +12,9 @@ namespace UGFramework.Editor.Inspector
      */
     public static class ObjectDrawer
     {
-        public static bool Draw(object obj, GUIContent content = null)
+        public static bool Draw(object value, GUIContent content = null)
         {
-            if (obj == null)
+            if (value == null)
             {
                 if (content == null)
                     return false;
@@ -22,7 +22,7 @@ namespace UGFramework.Editor.Inspector
                 return false;
             }
 
-            var type = obj.GetType();
+            var type = value.GetType();
 
             var memberInfos = new List<MemberInfo>();
             // Get all public or accessible fields
@@ -33,7 +33,7 @@ namespace UGFramework.Editor.Inspector
                 var accessible = field.GetCustomAttributes(typeof(ShowInInspector), false).Length > 0;
                 if (field.IsPublic || accessible) 
                 {
-                    var memberInfo = new MemberInfo(obj, field); 
+                    var memberInfo = new MemberInfo(value, field); 
                     if (InspectorUtility.CheckMember(memberInfo) == false)
                         continue;
                     memberInfos.Add(memberInfo);
@@ -52,7 +52,7 @@ namespace UGFramework.Editor.Inspector
                 var accessible = property.GetCustomAttributes(typeof(ShowInInspector), false).Length > 0;
                 if (accessible)
                 {
-                    var memberInfo = new MemberInfo(obj, property); 
+                    var memberInfo = new MemberInfo(value, property); 
                     if (InspectorUtility.CheckMember(memberInfo) == false)
                         continue;
                     memberInfos.Add(memberInfo);
@@ -65,11 +65,11 @@ namespace UGFramework.Editor.Inspector
             // Show foldout when content is not null
             if (content != null)
             {
+                InspectorUtility.AddFolder(content.text);
                 EditorGUILayout.BeginHorizontal();
                 InspectorUtility.DrawTab();
                 foldout = InspectorUtility.Foldout(content);
                 EditorGUILayout.EndHorizontal();
-                InspectorUtility.AddFolder(content.text);
             }
             else
             {

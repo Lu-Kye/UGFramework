@@ -15,6 +15,7 @@ namespace UGFramework.Coroutine
      * --- DOC BEGIN ---
      * --- DOC END ---
      */
+    [Serializable]
     public class Coroutine : IObject 
     {
         public CoroutineGroup Group { get; set; }

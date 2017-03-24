@@ -11,7 +11,7 @@ namespace UGFramework.Editor.Inspector
         public override void OnInspectorGUI()
         {
             InspectorUtility.Setup(this.Target);
-            Undo.RecordObject(this.Target, Target.GetType().Name);
+            Undo.RecordObject(this.Target, this.Target.GetType().Name);                
             InspectorUtility.DrawObject(this.Target);
         }
     }
