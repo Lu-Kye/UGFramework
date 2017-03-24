@@ -10,10 +10,6 @@ namespace UGFramework
 		NONE,
 	}
 
-	public class LogIO
-	{
-	}
-
 	/**
 	 * --- DOC BEGIN ---
 	 * --- DOC END ---
