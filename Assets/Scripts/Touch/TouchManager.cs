@@ -1,10 +1,12 @@
 using System.Collections.Generic;
 using UnityEngine;
+using UGFramework.Editor.Inspector;
 
 namespace UGFramework.Touch
 {
     public class TouchManager : MonoBehaviour
     {
+        [ShowInInspector(IsReadonly = true)]
         TouchInfo[] _cachedTouches; 
         List<TouchInfo> _curTouches = new List<TouchInfo>();
         public List<TouchInfo> Touches { get { return _curTouches; } }
@@ -12,6 +14,8 @@ namespace UGFramework.Touch
         bool _mobileCheckLostTouches = false;
 
         // Max touch count to check 
+        [ShowInInspector]
+        [SerializeField]
         uint _maxTouchCount = 2;
         public uint MaxTouchCount 
         {

@@ -1,14 +1,20 @@
+using System;
 using UnityEngine;
+using UGFramework.Editor.Inspector;
 
 namespace UGFramework.Touch
 {
+    [Serializable]
     public class TouchInfo
     {
+        [ShowInInspector] 
         public TouchPhase Phase { get; set; } 
 
+        [ShowInInspector] 
         // Mouse position
         public Vector3 Position { get; private set; }
 
+        [ShowInInspector] 
         public Vector3 PrevPosition { get; private set; }
 
     #if UNITY_EDITOR
@@ -27,7 +33,7 @@ namespace UGFramework.Touch
         }
     #endif
 
-        public TouchInfo InitByTouch(Touch touch)
+        public TouchInfo InitByTouch(UnityEngine.Touch touch)
         {
             this.PrevPosition = touch.position - touch.deltaPosition;
             this.Position = touch.position;

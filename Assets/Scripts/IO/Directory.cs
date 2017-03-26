@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace UGFramework
+namespace UGFramework.IO
 {
     public class Directory
     {

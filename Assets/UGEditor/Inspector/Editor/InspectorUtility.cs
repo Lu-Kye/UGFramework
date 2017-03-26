@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEditor;
+using System.Collections;
 
 namespace UGFramework.Editor.Inspector
 {
@@ -32,7 +33,13 @@ namespace UGFramework.Editor.Inspector
         {
             Path += folder + "/";
         }
-        public static bool Foldout(GUIContent content)
+        public static void Foldout(bool foldout, object obj = null, string path = null)
+        {
+            obj = obj == null ? Object : obj;
+            path = string.IsNullOrEmpty(path) ? Path : path;
+            foldoutRecords[obj][path] = foldout;
+        }
+        public static bool DrawFoldout(GUIContent content)
         {
             if (foldoutRecords.ContainsKey(Object) == false)
                 foldoutRecords[Object] = new Dictionary<string, bool>();
@@ -45,14 +52,23 @@ namespace UGFramework.Editor.Inspector
             int width = (Path.Split('/').Length - 1) * 1;
             EditorGUILayout.LabelField("", GUILayout.Width(width));
         }
+        public static bool DrawTabAndFoldout(GUIContent content)
+        {
+            var foldout = false;
+            EditorGUILayout.BeginHorizontal();
+            DrawTab();
+            foldout = DrawFoldout(content);
+            EditorGUILayout.EndHorizontal();
+            return foldout;
+        }
 
         public static bool CheckMember(MemberInfo info)
         {
             return MemberDrawer.Check(info);
         }
-        public static bool DrawMember(MemberInfo info, GUIContent content = null)
+        public static bool DrawMember(ref MemberInfo info, GUIContent content = null)
         {
-            return MemberDrawer.Draw(info, content);
+            return MemberDrawer.Draw(ref info, content);
         }
 
         public static bool DrawObject(object value, GUIContent content = null)
@@ -93,9 +109,10 @@ namespace UGFramework.Editor.Inspector
         }
 
 #region Collections
-        public static bool DrawHashSet(HashSet<object> value, GUIContent content)
+        public static bool DrawList(List<object> values, IList iValues, GUIContent content, bool isReadonly)
         {
-            return HashSetDrawer.Draw(value, content);
+            ListDrawer.IsReadonly = isReadonly;
+            return ListDrawer.Draw(values, iValues, content);
         }
 #endregion
     }

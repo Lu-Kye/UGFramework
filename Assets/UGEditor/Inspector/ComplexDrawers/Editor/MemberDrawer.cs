@@ -1,6 +1,7 @@
 #pragma warning disable
 
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -32,7 +33,7 @@ namespace UGFramework.Editor.Inspector
         {
             try
             {
-                Draw(info, null, true);
+                Draw(ref info, null, true);
                 return true;
             }
             catch (System.Exception e)
@@ -42,16 +43,25 @@ namespace UGFramework.Editor.Inspector
             }
         }
 
-        public static bool Draw(MemberInfo info, GUIContent content)
+        public static bool Draw(ref MemberInfo info, GUIContent content)
         {
-            return Draw(info, content, false);
+            return Draw(ref info, content, false);
         }
 
-        static bool Draw(MemberInfo info, GUIContent content = null, bool check = false)
+        static bool Draw(ref MemberInfo info, GUIContent content = null, bool check = false)
         {
             content = content == null ? new GUIContent(info.Name, info.Tooltip) : content;
 
             var changed = false;
+
+            try 
+            {
+                var type = info.Type;
+            }
+            catch (Exception e)
+            {
+                Debug.Log(e.Message);
+            }
 
             // Int
             if (info.Type == typeof(int))
@@ -139,17 +149,31 @@ namespace UGFramework.Editor.Inspector
 
                 var value = info.GetValue<object>();
                 changed = InspectorUtility.DrawObject(value, content); 
+                if (changed && IsWritable(info))
+                    info.SetValue(value);
 
                 IsReadonly = prevIsReadonly;
             }
 #region Collections
-            else if (info.Type == typeof(HashSet<>))
+            // Array || List<>
+            else if (info.Type.IsArray
+                || (info.Type.IsGenericType && info.Value is IList))
             {
                 if (check)
                     return false;
+
+                // If list is readonly, members of class are readonly
+                var prevIsReadonly = IsReadonly;
+                if (info.IsReadonly)
+                    IsReadonly = true;
                 
-                var value = info.GetValue<HashSet<object>>();
-                changed = InspectorUtility.DrawHashSet(value, content);
+                var values = info.GetList();
+                var iValues = info.GetValue<IList>();
+                changed = InspectorUtility.DrawList(values, iValues, content, IsReadonly);
+                if (changed && IsWritable(info))
+                    info.SetList(values);
+
+                IsReadonly = prevIsReadonly;
             }
 #endregion
             else

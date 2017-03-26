@@ -23,10 +23,15 @@ namespace UGFramework.Touch
         public Vector3 PrevMousePosition;
         public Vector3 MousePosition;
 
-        Coroutine _tryStartDraggingCo;
+        UnityEngine.Coroutine _tryStartDraggingCo;
         IEnumerator TryStartDragging(TouchInfo touchInfo)
         {
             yield return new WaitForSeconds(_delay);
+            if (touchInfo.Phase == TouchPhase.Ended)
+            {
+                _state = CheckerState.Failed;
+                yield break;
+            }
             _state = CheckerState.SuccessAndChecking;
             this.AddTrackingTouch(touchInfo);
             this.PrevMousePosition = touchInfo.Position;

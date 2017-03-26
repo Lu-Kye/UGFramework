@@ -4,7 +4,7 @@ namespace UGFramework.Editor.Inspector
 {
     [AttributeUsageAttribute(
         AttributeTargets.Property | AttributeTargets.Field, 
-        Inherited = false, 
+        Inherited = true, 
         AllowMultiple = false)]
     public class ShowInInspector : Attribute
     {
@@ -21,14 +21,12 @@ namespace UGFramework.Editor.Inspector
             }
         }
 
-        public string ReferenceField { get; set; }
-
         public ShowInInspector() {}
     }
 
     [AttributeUsageAttribute(
         AttributeTargets.Property | AttributeTargets.Field, 
-        Inherited = false, 
+        Inherited = true, 
         AllowMultiple = false)]
     public class InspectorTooltip : Attribute
     {

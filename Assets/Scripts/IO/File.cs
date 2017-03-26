@@ -1,4 +1,7 @@
-public class File
+namespace UGFramework.IO
 {
-    
+    public class File
+    {
+        
+    }
 }

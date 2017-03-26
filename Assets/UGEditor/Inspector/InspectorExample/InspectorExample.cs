@@ -14,6 +14,10 @@ namespace UGFramework.Editor.Inspector
         public uint TestUInt = 1;     
         public float TestFloat = 1.5f;
 
+        [ShowInInspector]
+        [SerializeField]
+        int TestPrivate = 1;
+
         [InspectorTooltip("Test")]
         [ShowInInspector]
         public int TestProperty { get; set; }
@@ -49,6 +53,27 @@ namespace UGFramework.Editor.Inspector
 
         public string TestString = "Hello";
 
-        public HashSet<int> TestHashSet = new HashSet<int>() { 1, 2 };
+        // public List<int> TestList = new List<int>() { 1, 2, };
+
+        [Serializable]
+        public class TestListClassDef
+        {
+            public int TestListClassDefMember = 1;
+            public TestListClassDef(int value)
+            {
+                this.TestListClassDefMember = value;
+            }
+        }
+        public List<TestListClassDef> TestListClass = new List<TestListClassDef>() 
+        {
+            new TestListClassDef(1),
+            new TestListClassDef(2),
+        };
+        [ShowInInspector(IsReadonly = true)]
+        public List<TestListClassDef> TestListClassReadonly = new List<TestListClassDef>() 
+        {
+            new TestListClassDef(1),
+            new TestListClassDef(2),
+        };
     }
 }

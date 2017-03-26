@@ -66,10 +66,7 @@ namespace UGFramework.Editor.Inspector
             if (content != null)
             {
                 InspectorUtility.AddFolder(content.text);
-                EditorGUILayout.BeginHorizontal();
-                InspectorUtility.DrawTab();
-                foldout = InspectorUtility.Foldout(content);
-                EditorGUILayout.EndHorizontal();
+                foldout = InspectorUtility.DrawTabAndFoldout(content);
             }
             else
             {
@@ -88,7 +85,8 @@ namespace UGFramework.Editor.Inspector
                 var prePath = InspectorUtility.Path;
                 EditorGUILayout.BeginHorizontal();
                 InspectorUtility.DrawTab();
-                changed |= InspectorUtility.DrawMember(iter.Current); 
+                var info = iter.Current;
+                changed |= InspectorUtility.DrawMember(ref info); 
                 EditorGUILayout.EndHorizontal();
                 InspectorUtility.Path = prePath;
             }
