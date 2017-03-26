@@ -19,6 +19,8 @@ namespace UGFramework.Editor.Inspector
 
         public static object Object { get; private set; }
 
+        public static string SelectedPath { get; private set; }
+
         /**
          * Call reset before drawing new root object
          */
@@ -33,19 +35,44 @@ namespace UGFramework.Editor.Inspector
         {
             Path += folder + "/";
         }
-        public static void Foldout(bool foldout, object obj = null, string path = null)
+        public static void Foldout(bool foldout, object obj = null, string path = null, bool recursive = false)
         {
             obj = obj == null ? Object : obj;
             path = string.IsNullOrEmpty(path) ? Path : path;
             foldoutRecords[obj][path] = foldout;
+            if (recursive)
+            {
+                var tmpPaths = new string[foldoutRecords[obj].Keys.Count];
+                foldoutRecords[obj].Keys.CopyTo(tmpPaths, 0);
+                foreach (var tmpPath in tmpPaths)
+                {
+                    if (tmpPath.StartsWith(path) == false)
+                        continue;
+                    foldoutRecords[obj][tmpPath] = foldout;
+                }
+            }
         }
+        public static bool ForceFoldout { get; set; }
         public static bool DrawFoldout(GUIContent content)
         {
             if (foldoutRecords.ContainsKey(Object) == false)
                 foldoutRecords[Object] = new Dictionary<string, bool>();
             if (foldoutRecords[Object].ContainsKey(Path) == false)
                 foldoutRecords[Object][Path] = false;
-            return foldoutRecords[Object][Path] = EditorGUILayout.Foldout(foldoutRecords[Object][Path], content, true);
+            
+            foldoutRecords[Object][Path] = EditorGUILayout.Foldout(foldoutRecords[Object][Path], content, true);
+            // Debug.Log("DrawFoldout " + Path);
+
+            var contentRect = GUILayoutUtility.GetLastRect();
+            var evt = Event.current;
+            var mousePos = evt.mousePosition;
+            if (evt.type == EventType.ContextClick && contentRect.Contains(mousePos)) {
+                SelectedPath = Path;
+                EditorUtility.DisplayPopupMenu(new Rect(mousePos.x, mousePos.y, 0, 0), TopbarConfig.INSPECTOR, null);
+                Event.current.Use();
+            }
+
+            return ForceFoldout ? true : foldoutRecords[Object][Path];
         }
         public static void DrawTab()
         {

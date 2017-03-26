@@ -9,6 +9,7 @@ namespace UGFramework.Editor
     {
         public const string ROOT = "UGFramework";
         public const string EXAMPLES = ROOT + "/Examples";
+        public const string INSPECTOR = ROOT + "/Inspector";
         public const string THIRDPARTY = ROOT + "/ThirdParty";
     }
 }

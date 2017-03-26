@@ -53,7 +53,8 @@ namespace UGFramework.Editor.Inspector
 
         public string TestString = "Hello";
 
-        // public List<int> TestList = new List<int>() { 1, 2, };
+        public List<int> TestList = new List<int>();
+        public LinkedList<int> TestLinkedList = new LinkedList<int>(); 
 
         [Serializable]
         public class TestListClassDef
@@ -64,6 +65,7 @@ namespace UGFramework.Editor.Inspector
                 this.TestListClassDefMember = value;
             }
         }
+        public List<TestStructDef> TestListStruct = new List<TestStructDef>();
         public List<TestListClassDef> TestListClass = new List<TestListClassDef>() 
         {
             new TestListClassDef(1),

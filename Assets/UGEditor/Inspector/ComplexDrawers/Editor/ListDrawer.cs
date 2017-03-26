@@ -58,11 +58,10 @@ namespace UGFramework.Editor.Inspector
             var prePath = InspectorUtility.Path;
 
             var name = "Element" + index;
-            InspectorUtility.AddFolder(name);
-
             var info = new MemberInfo(values[index], name);
             EditorGUILayout.BeginHorizontal(); 
-            InspectorUtility.DrawTab(); var changed = InspectorUtility.DrawMember(ref info);
+            InspectorUtility.DrawTab(); 
+            var changed = InspectorUtility.DrawMember(ref info);
             var added = false;
             var deleted = false;
             changed |= DrawAddDelete(index, ref added, ref deleted);
@@ -117,7 +116,14 @@ namespace UGFramework.Editor.Inspector
             }
             else
             {
-                value = JsonConvert.DeserializeObject("", type);                
+                if (type.IsValueType && type.IsPrimitive)
+                {
+                    value = Activator.CreateInstance(type);
+                }
+                else
+                {
+                    value = JsonConvert.DeserializeObject("{}", type);                
+                }
                 _values.Insert(0, value);
             }
         }
