@@ -61,7 +61,7 @@ namespace UGFramework.Editor.Inspector
             var info = new MemberInfo(values[index], name);
             EditorGUILayout.BeginHorizontal(); 
             InspectorUtility.DrawTab(); 
-            var changed = InspectorUtility.DrawMember(ref info);
+            var changed = InspectorUtility.DrawMember(info);
             var added = false;
             var deleted = false;
             changed |= DrawAddDelete(index, ref added, ref deleted);

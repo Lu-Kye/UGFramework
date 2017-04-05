@@ -5,7 +5,7 @@ using UnityEngine;
 
 namespace UGFramework.Editor.Inspector
 {
-    public struct MemberInfo
+    public class MemberInfo
     {
         object _target;
         public object Target 

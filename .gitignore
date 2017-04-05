@@ -8,6 +8,8 @@
 
 /Assets/VSCode
 /Assets/VSCode.meta
+/Assets/StreamingAssets/res/
+/Assets/StreamingAssets/res.meta
 
 *.DS_Store
 

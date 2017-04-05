@@ -86,7 +86,7 @@ namespace UGFramework.Editor.Inspector
                 EditorGUILayout.BeginHorizontal();
                 InspectorUtility.DrawTab();
                 var info = iter.Current;
-                changed |= InspectorUtility.DrawMember(ref info); 
+                changed |= InspectorUtility.DrawMember(info); 
                 EditorGUILayout.EndHorizontal();
                 InspectorUtility.Path = prePath;
             }

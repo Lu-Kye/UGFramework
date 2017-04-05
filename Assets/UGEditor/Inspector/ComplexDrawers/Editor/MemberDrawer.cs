@@ -33,7 +33,7 @@ namespace UGFramework.Editor.Inspector
         {
             try
             {
-                Draw(ref info, null, true);
+                Draw(info, null, true);
                 return true;
             }
             catch (System.Exception e)
@@ -43,12 +43,12 @@ namespace UGFramework.Editor.Inspector
             }
         }
 
-        public static bool Draw(ref MemberInfo info, GUIContent content)
+        public static bool Draw(MemberInfo info, GUIContent content)
         {
-            return Draw(ref info, content, false);
+            return Draw(info, content, false);
         }
 
-        static bool Draw(ref MemberInfo info, GUIContent content = null, bool check = false)
+        static bool Draw(MemberInfo info, GUIContent content = null, bool check = false)
         {
             content = content == null ? new GUIContent(info.Name, info.Tooltip) : content;
 

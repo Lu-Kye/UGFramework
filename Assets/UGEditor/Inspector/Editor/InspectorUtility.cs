@@ -93,9 +93,9 @@ namespace UGFramework.Editor.Inspector
         {
             return MemberDrawer.Check(info);
         }
-        public static bool DrawMember(ref MemberInfo info, GUIContent content = null)
+        public static bool DrawMember(MemberInfo info, GUIContent content = null)
         {
-            return MemberDrawer.Draw(ref info, content);
+            return MemberDrawer.Draw(info, content);
         }
 
         public static bool DrawObject(object value, GUIContent content = null)
