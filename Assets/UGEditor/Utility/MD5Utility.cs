@@ -2,22 +2,25 @@ using System.IO;
 using System.Security.Cryptography;
 using System.Text;
 
-public static class MD5Utility
+namespace UGFramework.Editor
 {
-    public static string GetFileMD5(string fullpath)
+    public static class MD5Utility
     {
-        var sb = new StringBuilder();
-        using (var md5 = MD5.Create())
+        public static string GetFileMD5(string fullpath)
         {
-            using (var fs = new FileStream(fullpath, FileMode.Open))
+            var sb = new StringBuilder();
+            using (var md5 = MD5.Create())
             {
-                int fsLen = (int)fs.Length;
-                var bytes = new byte[fsLen];
-                var hash = md5.ComputeHash(bytes);
-                foreach (var b in hash)
-                    sb.Append(b.ToString("x2"));
+                using (var fs = new FileStream(fullpath, FileMode.Open))
+                {
+                    int fsLen = (int)fs.Length;
+                    var bytes = new byte[fsLen];
+                    var hash = md5.ComputeHash(bytes);
+                    foreach (var b in hash)
+                        sb.Append(b.ToString("x2"));
+                }
             }
+            return sb.ToString();
         }
-        return sb.ToString();
     }
 }

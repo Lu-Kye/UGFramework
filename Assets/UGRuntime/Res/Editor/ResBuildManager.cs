@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
+using UGFramework.Editor;
 using UGFramework.Log;
 using UGFramework.Utility;
 using UnityEditor;
@@ -27,7 +28,7 @@ namespace UGFramework.Res
         {
             Clear();
             Directory.CreateDirectory(_outPath);
-            EditorUserBuildSettings.SwitchActiveBuildTarget(BuildTargetGroup.Unknown, targetPlatform);
+            PlatformUtility.Switch(targetPlatform);
         }
 
         public static void Build(BuildTarget targetPlatform)
