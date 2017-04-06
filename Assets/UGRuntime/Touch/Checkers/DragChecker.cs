@@ -61,8 +61,20 @@ namespace UGFramework.Touch
                 _state = CheckerState.Failed;
                 return;
             }
-            base.OnTouchesBegan(touchInfos);
-            this.StartTryDragging(touchInfos[0]);
+
+            TouchInfo touchInfo = null;
+            for (int i = 0; i < touchInfos.Count; ++i)
+            {
+                if (touchInfos[i].Phase != TouchPhase.Began || touchInfos[i].IsTouchedOnUI)
+                    continue;
+                touchInfo = touchInfos[i]; 
+                break;
+            }
+            if (touchInfo == null)
+                return;
+
+            _state = CheckerState.Checking;
+            this.StartTryDragging(touchInfo);
         }
 
         protected override void OnTouchesMoved(List<TouchInfo> trackingTouchInfos, List<TouchInfo> touchInfos)

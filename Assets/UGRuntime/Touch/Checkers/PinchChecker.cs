@@ -24,7 +24,13 @@ namespace UGFramework.Touch
 
         protected override void OnTouchesBegan(List<TouchInfo> touchInfos)
         {
-            if (touchInfos.Count != 2)
+            var touchedOnUI = true;
+            for (int i = 0; i < touchInfos.Count; ++i)
+            {
+                touchedOnUI &= touchInfos[i].IsTouchedOnUI;
+            }
+
+            if (touchInfos.Count != 2 || touchedOnUI)
             {
                 _state = CheckerState.Failed;
                 return;

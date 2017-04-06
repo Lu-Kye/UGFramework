@@ -18,17 +18,19 @@ namespace UGFramework.Touch
 
         protected override void OnTouchesBegan(List<TouchInfo> touchInfos)
         {
-            base.OnTouchesBegan(touchInfos);
-
             TouchInfo touchInfo = null;
             for (int i = 0; i < touchInfos.Count; ++i)
             {
-                if (touchInfos[i].Phase != TouchPhase.Began)
+                if (touchInfos[i].Phase != TouchPhase.Began || touchInfos[i].IsTouchedOnUI)
                     continue;
                 touchInfo = touchInfos[i]; 
+                break;
             }
-            this.AddTrackingTouch(touchInfo);
+            if (touchInfo == null)
+                return;
 
+            _state = CheckerState.Began;
+            this.AddTrackingTouch(touchInfo);
             this.TouchPosition = touchInfos[0].Position;
             _moveDis = 0;
         }
