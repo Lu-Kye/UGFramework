@@ -1,3 +1,5 @@
+[![license](https://img.shields.io/badge/license-MIT-blue.png)](LICENSE)
+
 # Description
 An unity game framework, includes table manager, network manager(tcp, http, udp), some tools, some unity ui components, ai system, and most important is examples.
 
