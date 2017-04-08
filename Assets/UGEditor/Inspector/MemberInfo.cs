@@ -164,68 +164,14 @@ namespace UGFramework.Editor.Inspector
 
         public void SetValue(object value)
         {
+            var json = JsonConvert.SerializeObject(value);
+            value = JsonConvert.DeserializeObject(json, this.Type);
+
             if (this.IsField)
                 this.FieldInfo.SetValue(this.Target, value);
             else if (this.IsProperty)
                 return;
             this.Target = value;
-        }
-
-        public List<object> GetList()
-        {
-            var values = new List<object>();
-            var iValues = this.GetValue<ICollection>();
-            if (iValues == null)
-                return values;
-            foreach (var value in iValues)
-            {
-                values.Add(value);
-            }
-            return values;
-        }
-
-        public void SetList(List<object> values)
-        {
-            var json = JsonConvert.SerializeObject(values);
-            var value = JsonConvert.DeserializeObject(json, this.Type);
-            this.SetValue(value);
-        }
-
-        [Serializable]
-        public class DictElement
-        {
-            public object Key;
-            public object Value;
-        }
-
-        public List<DictElement> GetDict()
-        {
-            var values = new List<DictElement>();
-            var iValues = this.GetValue<IDictionary>();
-            var keyType = this.GetValue<IDictionary>().GetType().GetGenericArguments()[0];
-            var valueType = this.GetValue<IDictionary>().GetType().GetGenericArguments()[1];
-            if (iValues == null)
-                return values;
-            foreach (var key in iValues.Keys)
-            {
-                var element = new DictElement();
-                element.Key = Convert.ChangeType(key, keyType);
-                element.Value = Convert.ChangeType(iValues[key], valueType);
-                values.Add(element);
-            }
-            return values;
-        }
-
-        public void SetDict(List<DictElement> values)
-        {
-            var iValues = this.GetValue<IDictionary>();
-            iValues.Clear();
-            foreach (var pair in values)
-            {
-                if (iValues.Contains(pair.Key))
-                    continue;
-                iValues.Add(pair.Key, pair.Value);
-            }
         }
     }
 }

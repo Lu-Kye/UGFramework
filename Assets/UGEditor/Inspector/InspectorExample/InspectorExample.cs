@@ -53,6 +53,13 @@ namespace UGFramework.Editor.Inspector
 
         public string TestString = "Hello";
 
+        public int[] TestArray = new int[] { 1, 2, };
+        public TestListClassDef[] TestArrayClass = new TestListClassDef[] 
+        {
+            new TestListClassDef(1),
+            new TestListClassDef(2),
+        };
+
         public List<int> TestList = new List<int>();
 
         public LinkedList<int> TestLinkedList = new LinkedList<int>(); 
@@ -80,6 +87,7 @@ namespace UGFramework.Editor.Inspector
         };
 
         public Dictionary<string, int> TestDict = new Dictionary<string, int>();
+        public Dictionary<int, int> TestDictInt = new Dictionary<int, int>();
         public Dictionary<TestListClassDef, TestListClassDef> TestObjectDict = new Dictionary<TestListClassDef, TestListClassDef>();
 
         void Awake()
@@ -89,6 +97,9 @@ namespace UGFramework.Editor.Inspector
 
             this.TestDict["1"] = 1;
             this.TestDict["2"] = 1;
+
+            this.TestDictInt[1] = 1;
+            this.TestDictInt[2] = 1;
 
             var key = new TestListClassDef(1);
             var value = new TestListClassDef(2);

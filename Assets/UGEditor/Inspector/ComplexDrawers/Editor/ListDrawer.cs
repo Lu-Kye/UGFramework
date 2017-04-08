@@ -7,6 +7,19 @@ using Newtonsoft.Json;
 
 namespace UGFramework.Editor.Inspector
 {
+    public static class ListHelper
+    {
+        public static List<object> Get(ICollection iValues)
+        {
+            var values = new List<object>();
+            foreach (var value in iValues)
+            {
+                values.Add(value);
+            }
+            return values;
+        }
+    }
+
     public static class ListDrawer
     {
         public static bool IsReadonly { get; set; }
@@ -16,14 +29,13 @@ namespace UGFramework.Editor.Inspector
 
         public static bool Draw(List<object> values, Type elementType, GUIContent content)
         {
+            _values = values;
             _elementType = elementType;
             return Draw(values, content);
         }
 
         static bool Draw(List<object> values, GUIContent content)
         {
-            _values = values;
-
             EditorGUILayout.BeginVertical();
 
             var listName = content.text;

@@ -3,6 +3,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEditor;
 using UnityEngine;
 
@@ -160,7 +161,27 @@ namespace UGFramework.Editor.Inspector
                 IsReadonly = prevIsReadonly;
             }
 #region Collections
-            // Array || List<> || LinkedList<>
+            // Array
+            else if (info.Type.IsArray) 
+            {
+                if (check)
+                    return false;
+
+                // If array is readonly, members of class are readonly
+                var prevIsReadonly = IsReadonly;
+                if (IsWritable(info) == false)
+                    IsReadonly = true;
+
+                var values = ((IEnumerable)info.Value).Cast<object>()
+                                   .ToList();
+                var elementType = info.Type.GetElementType();
+                changed = InspectorUtility.DrawList(values, elementType, content, IsReadonly);
+                if (changed)
+                    info.SetValue(values);
+
+                IsReadonly = prevIsReadonly;
+            }
+            // List || LinkedList
             else if (
                 info.Type.IsArray ||
                 (info.Type.IsGenericType && info.Type.GetGenericTypeDefinition() == typeof(List<>)) ||
@@ -170,21 +191,16 @@ namespace UGFramework.Editor.Inspector
                 if (check)
                     return false;
 
-                List<object> values = null;
-                Type elementType;
-                values = info.GetList();
-                elementType = info.GetValue<ICollection>().GetType().GetGenericArguments()[0];
-
                 // If list is readonly, members of class are readonly
                 var prevIsReadonly = IsReadonly;
                 if (IsWritable(info) == false)
                     IsReadonly = true;
-
+                
+                var values = ListHelper.Get(info.GetValue<ICollection>());
+                var elementType = info.GetValue<ICollection>().GetType().GetGenericArguments()[0];
                 changed = InspectorUtility.DrawList(values, elementType, content, IsReadonly);
-                if (changed && IsWritable(info))
-                {
-                    info.SetList(values);
-                }
+                if (changed)
+                    info.SetValue(values);
 
                 IsReadonly = prevIsReadonly;
             }
@@ -196,20 +212,17 @@ namespace UGFramework.Editor.Inspector
                 if (check)
                     return false;
 
-                var values = info.GetDict();
-                var keyType = info.GetValue<IDictionary>().GetType().GetGenericArguments()[0];
-                var valueType = info.GetValue<IDictionary>().GetType().GetGenericArguments()[1];
-
                 // If dict is readonly, members of class are readonly
                 var prevIsReadonly = IsReadonly;
                 if (IsWritable(info) == false)
                     IsReadonly = true;
 
+                var values = DictHelper.Get(info.GetValue<IDictionary>());
+                var keyType = info.GetValue<IDictionary>().GetType().GetGenericArguments()[0];
+                var valueType = info.GetValue<IDictionary>().GetType().GetGenericArguments()[1];
                 changed = InspectorUtility.DrawDict(values, keyType, valueType, content, IsReadonly);
-                if (changed && IsWritable(info))
-                {
-                    info.SetDict(values);
-                }
+                if (changed)
+                    info.SetValue(values);
 
                 IsReadonly = prevIsReadonly;
             }

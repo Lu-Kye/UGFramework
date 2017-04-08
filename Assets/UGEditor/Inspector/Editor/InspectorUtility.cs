@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEditor;
 using System.Collections;
+using System.Linq;
 
 namespace UGFramework.Editor.Inspector
 {
@@ -139,6 +140,19 @@ namespace UGFramework.Editor.Inspector
             return changed;
         }
 
+        public static bool DrawArray(object[] values, Type elementType, GUIContent content, bool isReadonly)
+        {
+            var preIsReadonly = ListDrawer.IsReadonly;
+            ListDrawer.IsReadonly = isReadonly;
+
+            var changed = ListDrawer.Draw(values.ToList(), elementType, content);
+
+            ListDrawer.IsReadonly = preIsReadonly;
+
+            return changed;
+        }
+
+        // Draw List<>, LinkedList<>
         public static bool DrawList(List<object> values, Type elementType, GUIContent content, bool isReadonly)
         {
             var preIsReadonly = ListDrawer.IsReadonly;
@@ -151,7 +165,7 @@ namespace UGFramework.Editor.Inspector
             return changed;
         }
 
-        public static bool DrawDict(List<MemberInfo.DictElement> values, Type keyType, Type valueType, GUIContent content, bool isReadonly)
+        public static bool DrawDict(Dictionary<object, object> values, Type keyType, Type valueType, GUIContent content, bool isReadonly)
         {
             var preIsReadonly = DictDrawer.IsReadonly;
             DictDrawer.IsReadonly = isReadonly;
