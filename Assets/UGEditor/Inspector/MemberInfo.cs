@@ -2,6 +2,8 @@ using System.Collections;
 using System.Collections.Generic;
 using SR = System.Reflection;
 using UnityEngine;
+using Newtonsoft.Json;
+using System;
 
 namespace UGFramework.Editor.Inspector
 {
@@ -33,8 +35,23 @@ namespace UGFramework.Editor.Inspector
 
         public string Tooltip { get; set; }
 
+        public bool IsUnitySerializable
+        {
+            get
+            {
+                if (
+                    this.Type.IsGenericType && this.Type.GetGenericTypeDefinition() == typeof(LinkedList<>) ||
+                    this.Type.IsGenericType && this.Type.GetGenericTypeDefinition() == typeof(Dictionary<,>)
+                )
+                {
+                    return false;
+                }
+                return true;
+            }
+        }
 
-        bool _isReadonly;
+
+        bool _isReadonly = true;
         /**
          * Private field and properties are readonly
          */
@@ -86,7 +103,7 @@ namespace UGFramework.Editor.Inspector
             }
         }
 
-        public bool IsCollection 
+        public bool IsEnumerable 
         {
             get
             {
@@ -145,30 +162,6 @@ namespace UGFramework.Editor.Inspector
             return (T)this.Target;
         }
 
-        public List<object> GetList()
-        {
-            var values = new List<object>();
-            var iValues = this.GetValue<IList>();
-            if (iValues == null)
-                return values;
-            for (int i = 0; i < iValues.Count; ++i)
-            {
-                values.Add((object)iValues[i]);
-            }
-            return values;
-        }
-
-        public void SetList(List<object> values)
-        {
-            var iValues = this.GetValue<IList>();
-            iValues.Clear();
-            for (int i = 0; i < values.Count; ++i)
-            {
-                iValues.Add(values[i]);
-            }
-            this.SetValue(iValues);
-        }
-
         public void SetValue(object value)
         {
             if (this.IsField)
@@ -176,6 +169,63 @@ namespace UGFramework.Editor.Inspector
             else if (this.IsProperty)
                 return;
             this.Target = value;
+        }
+
+        public List<object> GetList()
+        {
+            var values = new List<object>();
+            var iValues = this.GetValue<ICollection>();
+            if (iValues == null)
+                return values;
+            foreach (var value in iValues)
+            {
+                values.Add(value);
+            }
+            return values;
+        }
+
+        public void SetList(List<object> values)
+        {
+            var json = JsonConvert.SerializeObject(values);
+            var value = JsonConvert.DeserializeObject(json, this.Type);
+            this.SetValue(value);
+        }
+
+        [Serializable]
+        public class DictElement
+        {
+            public object Key;
+            public object Value;
+        }
+
+        public List<DictElement> GetDict()
+        {
+            var values = new List<DictElement>();
+            var iValues = this.GetValue<IDictionary>();
+            var keyType = this.GetValue<IDictionary>().GetType().GetGenericArguments()[0];
+            var valueType = this.GetValue<IDictionary>().GetType().GetGenericArguments()[1];
+            if (iValues == null)
+                return values;
+            foreach (var key in iValues.Keys)
+            {
+                var element = new DictElement();
+                element.Key = Convert.ChangeType(key, keyType);
+                element.Value = Convert.ChangeType(iValues[key], valueType);
+                values.Add(element);
+            }
+            return values;
+        }
+
+        public void SetDict(List<DictElement> values)
+        {
+            var iValues = this.GetValue<IDictionary>();
+            iValues.Clear();
+            foreach (var pair in values)
+            {
+                if (iValues.Contains(pair.Key))
+                    continue;
+                iValues.Add(pair.Key, pair.Value);
+            }
         }
     }
 }

@@ -7,20 +7,23 @@ using Newtonsoft.Json;
 
 namespace UGFramework.Editor.Inspector
 {
-    public static class ListDrawer
+    public static class DictDrawer
     {
         public static bool IsReadonly { get; set; }
 
-        static Type _elementType;
-        static List<object> _values;
+        static Type _keyType;
+        static Type _valueType;
 
-        public static bool Draw(List<object> values, Type elementType, GUIContent content)
+        static List<MemberInfo.DictElement> _values;
+
+        public static bool Draw(List<MemberInfo.DictElement> values, Type keyType, Type valueType, GUIContent content)
         {
-            _elementType = elementType;
+            _keyType = keyType;
+            _valueType = valueType;
             return Draw(values, content);
         }
 
-        static bool Draw(List<object> values, GUIContent content)
+        static bool Draw(List<MemberInfo.DictElement> values, GUIContent content)
         {
             _values = values;
 
@@ -41,7 +44,7 @@ namespace UGFramework.Editor.Inspector
 
             if (changed == false && foldout)
             {
-                var tmpValues = new List<object>(values);
+                var tmpValues = new List<MemberInfo.DictElement>(values);
                 for (int i = 0; i < tmpValues.Count; ++i)
                 {
                     changed |= DrawElement(tmpValues, i);
@@ -53,7 +56,7 @@ namespace UGFramework.Editor.Inspector
             return changed;
         }
 
-        static bool DrawElement(List<object> values, int index)
+        static bool DrawElement(List<MemberInfo.DictElement> values, int index)
         {
             var prePath = InspectorUtility.Path;
 
@@ -70,7 +73,7 @@ namespace UGFramework.Editor.Inspector
             // Update value
             if (changed && deleted == false && added == false)
             {
-                UpdateElement(index, info.Value);
+                UpdateElement(index, info.Value as MemberInfo.DictElement);
             }
 
             InspectorUtility.Path = prePath;
@@ -78,7 +81,7 @@ namespace UGFramework.Editor.Inspector
             return changed;
         }
 
-        static void UpdateElement(int index, object value)
+        static void UpdateElement(int index, MemberInfo.DictElement value)
         {
             _values[index] = value;
         }
@@ -105,26 +108,37 @@ namespace UGFramework.Editor.Inspector
 
         static void _AddElement(int index)
         {
-            var type = _elementType;
+            object key = null;
             object value = null;
             if (index != -1 || _values.Count != 0)
             {
                 index = index == -1 ? _values.Count - 1 : index;
-                var json = JsonConvert.SerializeObject(_values[index]);
-                value = JsonConvert.DeserializeObject(json, type);
-                _values.Insert(index + 1, value);
+                var json = JsonConvert.SerializeObject(_values[index].Key);
+                key = JsonConvert.DeserializeObject(json, _keyType);
+                json = JsonConvert.SerializeObject(_values[index].Value);
+                value = JsonConvert.DeserializeObject(json, _valueType);
+
+                var element = new MemberInfo.DictElement();
+                element.Key = key;
+                element.Value = value;
+                _values.Insert(index + 1, element);
             }
             else
             {
-                if (type.IsValueType && type.IsPrimitive)
-                {
-                    value = Activator.CreateInstance(type);
-                }
+                if (_keyType.IsValueType && _keyType.IsPrimitive)
+                    key = Activator.CreateInstance(_keyType);
                 else
-                {
-                    value = JsonConvert.DeserializeObject("{}", type);                
-                }
-                _values.Insert(0, value);
+                    key = JsonConvert.DeserializeObject("{}", _keyType);                
+
+                if (_valueType.IsValueType && _valueType.IsPrimitive)
+                    value = Activator.CreateInstance(_valueType);
+                else
+                    value = JsonConvert.DeserializeObject("{}", _valueType);                
+
+                var element = new MemberInfo.DictElement();
+                element.Key = key;
+                element.Value = value;
+                _values.Insert(0, element);
             }
         }
         static bool _DeleteElement(int index)

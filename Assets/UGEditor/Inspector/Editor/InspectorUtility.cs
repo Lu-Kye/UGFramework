@@ -21,13 +21,17 @@ namespace UGFramework.Editor.Inspector
 
         public static string SelectedPath { get; private set; }
 
+        // If true, some readonly type will recognize as writeable. eg: Dictionary, LinkedList .etc
+        public static bool CustomSerialize { get; set; }
+
         /**
          * Call reset before drawing new root object
          */
-        public static void Setup(object obj)
+        public static void Setup(object obj, bool customSerialize = false)
         {
             Object = obj;
             Path = ROOT;
+            CustomSerialize = customSerialize; 
         }
 
         static Dictionary<object, Dictionary<string, bool>> foldoutRecords = new Dictionary<object, Dictionary<string, bool>>();
@@ -135,12 +139,28 @@ namespace UGFramework.Editor.Inspector
             return changed;
         }
 
-#region Collections
-        public static bool DrawList(List<object> values, IList iValues, GUIContent content, bool isReadonly)
+        public static bool DrawList(List<object> values, Type elementType, GUIContent content, bool isReadonly)
         {
+            var preIsReadonly = ListDrawer.IsReadonly;
             ListDrawer.IsReadonly = isReadonly;
-            return ListDrawer.Draw(values, iValues, content);
+
+            var changed = ListDrawer.Draw(values, elementType, content);
+
+            ListDrawer.IsReadonly = preIsReadonly;
+
+            return changed;
         }
-#endregion
+
+        public static bool DrawDict(List<MemberInfo.DictElement> values, Type keyType, Type valueType, GUIContent content, bool isReadonly)
+        {
+            var preIsReadonly = DictDrawer.IsReadonly;
+            DictDrawer.IsReadonly = isReadonly;
+
+            var changed = DictDrawer.Draw(values, keyType, valueType, content);
+
+            DictDrawer.IsReadonly = preIsReadonly;
+
+            return changed;
+        }
     }
 }

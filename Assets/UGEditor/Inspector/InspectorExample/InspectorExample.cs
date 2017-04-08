@@ -54,6 +54,7 @@ namespace UGFramework.Editor.Inspector
         public string TestString = "Hello";
 
         public List<int> TestList = new List<int>();
+
         public LinkedList<int> TestLinkedList = new LinkedList<int>(); 
 
         [Serializable]
@@ -77,5 +78,17 @@ namespace UGFramework.Editor.Inspector
             new TestListClassDef(1),
             new TestListClassDef(2),
         };
+
+        [SerializeField]
+        public Dictionary<string, int> TestDict = new Dictionary<string, int>();
+
+        void Awake()
+        {
+            this.TestLinkedList.AddLast(1);
+            this.TestLinkedList.AddLast(2);
+
+            this.TestDict["1"] = 1;
+            this.TestDict["2"] = 1;
+        }
     }
 }

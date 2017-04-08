@@ -3,6 +3,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using UnityEditor;
 using UnityEngine;
 
 namespace UGFramework.Editor.Inspector
@@ -24,8 +25,12 @@ namespace UGFramework.Editor.Inspector
 
         static bool IsWritable(MemberInfo info)
         {
+            if (InspectorUtility.CustomSerialize == false && info.IsUnitySerializable == false)
+                return false;
+
             if (info.IsReadonly)
                 return false;
+
             return MemberDrawer.IsReadonly == false;
         }
 
@@ -64,7 +69,7 @@ namespace UGFramework.Editor.Inspector
             }
 
             // Int
-            if (info.Type == typeof(int))
+            if (info.Value is int)
             {
                 if (check)
                     return false;
@@ -75,7 +80,7 @@ namespace UGFramework.Editor.Inspector
                     info.SetValue(value);
             }
             // Uint
-            else if (info.Type == typeof(uint))
+            else if (info.Value is uint)
             {
                 if (check)
                     return false;
@@ -86,7 +91,7 @@ namespace UGFramework.Editor.Inspector
                     info.SetValue((uint)Mathf.Max(0, value));
             }
             // Float
-            else if (info.Type == typeof(float))
+            else if (info.Value is float)
             {
                 if (check)
                     return false;
@@ -95,6 +100,17 @@ namespace UGFramework.Editor.Inspector
                 changed = InspectorUtility.DrawFloat(ref value, content);
                 if (changed && IsWritable(info))
                     info.SetValue(value);
+            }
+            // String
+            else if (info.Value is string)
+            {
+                if (check)
+                    return false;
+
+                var value = info.GetValue<string>();
+                changed = InspectorUtility.DrawString(ref value, content);
+                if (changed && IsWritable(info))
+                    info.SetValue(value);                        
             }
             // Enum
             else if (info.Type.IsEnum)
@@ -106,17 +122,6 @@ namespace UGFramework.Editor.Inspector
                 changed = InspectorUtility.DrawEnum(ref value, content);
                 if (changed && IsWritable(info))
                     info.SetValue(value);
-            }
-            // String
-            else if (info.Type == typeof(string))
-            {
-                if (check)
-                    return false;
-
-                var value = info.GetValue<string>();
-                changed = InspectorUtility.DrawString(ref value, content);
-                if (changed && IsWritable(info))
-                    info.SetValue(value);                        
             }
             // Struct
             else if (info.Type.IsValueType && info.Type.IsPrimitive == false)
@@ -137,7 +142,7 @@ namespace UGFramework.Editor.Inspector
                 IsReadonly = prevIsReadonly;
             }
             // Class
-            else if (info.Type.IsClass && info.IsCollection == false)
+            else if (info.Type.IsClass && info.IsEnumerable == false)
             {
                 if (check)
                     return false;
@@ -155,23 +160,56 @@ namespace UGFramework.Editor.Inspector
                 IsReadonly = prevIsReadonly;
             }
 #region Collections
-            // Array || List<>
-            else if (info.Type.IsArray
-                || (info.Type.IsGenericType && info.Value is IList))
+            // Array || List<> || LinkedList<>
+            else if (
+                info.Type.IsArray ||
+                (info.Type.IsGenericType && info.Type.GetGenericTypeDefinition() == typeof(List<>)) ||
+                (info.Type.IsGenericType && info.Type.GetGenericTypeDefinition() == typeof(LinkedList<>))
+            )
             {
                 if (check)
                     return false;
 
+                List<object> values = null;
+                Type elementType;
+                values = info.GetList();
+                elementType = info.GetValue<ICollection>().GetType().GetGenericArguments()[0];
+
                 // If list is readonly, members of class are readonly
                 var prevIsReadonly = IsReadonly;
-                if (info.IsReadonly)
+                if (IsWritable(info) == false)
                     IsReadonly = true;
-                
-                var values = info.GetList();
-                var iValues = info.GetValue<IList>();
-                changed = InspectorUtility.DrawList(values, iValues, content, IsReadonly);
+
+                changed = InspectorUtility.DrawList(values, elementType, content, IsReadonly);
                 if (changed && IsWritable(info))
+                {
                     info.SetList(values);
+                }
+
+                IsReadonly = prevIsReadonly;
+            }
+            // Dictionary<,>
+            else if (
+                (info.Type.IsGenericType && info.Type.GetGenericTypeDefinition() == typeof(Dictionary<,>))
+            )
+            {
+                if (check)
+                    return false;
+
+                var values = info.GetDict();
+                var keyType = info.GetValue<IDictionary>().GetType().GetGenericArguments()[0];
+                var valueType = info.GetValue<IDictionary>().GetType().GetGenericArguments()[1];
+
+                // If dict is readonly, members of class are readonly
+                var prevIsReadonly = IsReadonly;
+                if (IsWritable(info) == false)
+                    IsReadonly = true;
+
+                changed = InspectorUtility.DrawDict(values, keyType, valueType, content, IsReadonly);
+                if (changed && IsWritable(info))
+                {
+                    info.SetDict(values);
+                }
 
                 IsReadonly = prevIsReadonly;
             }
