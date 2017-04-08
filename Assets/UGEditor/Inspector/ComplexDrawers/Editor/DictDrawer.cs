@@ -60,7 +60,7 @@ namespace UGFramework.Editor.Inspector
         {
             var prePath = InspectorUtility.Path;
 
-            var name = "Element" + index;
+            var name = "Element" + index + "    Key: " + values[index].Key.ToString();
             var info = new MemberInfo(values[index], name);
             EditorGUILayout.BeginHorizontal(); 
             InspectorUtility.DrawTab(); 
@@ -115,6 +115,7 @@ namespace UGFramework.Editor.Inspector
                 index = index == -1 ? _values.Count - 1 : index;
                 var json = JsonConvert.SerializeObject(_values[index].Key);
                 key = JsonConvert.DeserializeObject(json, _keyType);
+
                 json = JsonConvert.SerializeObject(_values[index].Value);
                 value = JsonConvert.DeserializeObject(json, _valueType);
 

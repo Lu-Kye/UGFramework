@@ -79,8 +79,8 @@ namespace UGFramework.Editor.Inspector
             new TestListClassDef(2),
         };
 
-        [SerializeField]
         public Dictionary<string, int> TestDict = new Dictionary<string, int>();
+        public Dictionary<TestListClassDef, TestListClassDef> TestObjectDict = new Dictionary<TestListClassDef, TestListClassDef>();
 
         void Awake()
         {
@@ -89,6 +89,10 @@ namespace UGFramework.Editor.Inspector
 
             this.TestDict["1"] = 1;
             this.TestDict["2"] = 1;
+
+            var key = new TestListClassDef(1);
+            var value = new TestListClassDef(2);
+            this.TestObjectDict[key] = value;
         }
     }
 }
