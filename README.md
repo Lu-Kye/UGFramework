@@ -10,9 +10,11 @@ Make unity game easiler.
 1. Resources Manager(Editor, iOS, Android), includes AssetBundle build, load, download, save.
 2. Log Manager, includes writing log
 3. Coroutine Manager, custom coroutine runner.
-4. Touch Manager(Editor, iOS, Android), includes Pinch, Drag, Touch.
+4. 3D Touch Manager(Editor, iOS, Android), includes Pinch, Drag, Touch.
 5. Custom Inspector 
 
 # TODO Features
-1. Network Manager
-2. AI (StateMachine, BehaviourTree)
+- Network Manager
+- AI (StateMachine, BehaviourTree)
+- Object Pool
+- Doc generator
