@@ -31,14 +31,12 @@ namespace UGFramework.Editor.Inspector
 
         protected virtual void OnDraw()
         {
-            InspectorUtility.Setup(this.Target);
-
             Undo.RecordObject(this.Target, this.Target.GetType().Name);                
-            var changed = InspectorUtility.DrawObject(this.Target);
-            if (changed)
-            {
-                this.Repaint();
-            }
+
+            InspectorUtility.Setup(this.Target);
+            InspectorUtility.DrawObject(this.Target);
+
+            this.Repaint();
         }
 
         protected virtual void OnAfterInit()

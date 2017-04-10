@@ -16,13 +16,13 @@ namespace UGFramework.Pool
             where T : class, IObject
         {
             T obj = Activator.CreateInstance(typeof(T), args) as T;
-            obj.Init();
+            obj.Alloc();
             return obj;
         }
 
         public void Dealloc(IObject obj)
         {
-            obj.Dispose(); 
+            obj.Dealloc(); 
         }
     }
 }

@@ -27,7 +27,7 @@ namespace UGFramework.Coroutine
             if (_coroutine == null)
             {
                 _coroutine = new Coroutine(this.Coroutine.Group, _routine);
-                _coroutine.Init();
+                _coroutine.Alloc();
             }
             else if (_coroutine.IsRunning)
             {

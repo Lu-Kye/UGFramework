@@ -8,6 +8,7 @@ namespace UGFramework.Coroutine
 		void Start()
 		{
 			CoroutineManager.Instance.Run(this.TestCoroutine());
+			CoroutineManager.Instance.Run(this.TestCoroutine());
 		}
 
 		IEnumerator TestCoroutine()

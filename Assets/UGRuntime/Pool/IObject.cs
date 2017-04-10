@@ -1,9 +1,8 @@
-using System;
-
 namespace UGFramework.Pool
 {
-    public interface IObject : IDisposable
+    public interface IObject 
     {
-        void Init();    
+        void Alloc();    
+        void Dealloc();    
     }
 }

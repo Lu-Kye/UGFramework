@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using UGFramework.Pool;
+using UGFramework.Editor.Inspector;
 
 namespace UGFramework.Coroutine
 {
@@ -23,8 +24,10 @@ namespace UGFramework.Coroutine
 
         public int CreatedFrameCount { get; private set; }
 
+        [ShowInInspector]
         public Status Status { get; private set; }
 
+        [ShowInInspector]
         public bool IsRunning { get { return this.Status == Status.RUNNING; } }
 
         bool _noRoutine = false;
@@ -37,12 +40,12 @@ namespace UGFramework.Coroutine
             this.Status = Status.RUNNING;
         }
 
-        public void Init() 
+        public void Alloc() 
         { 
             this.Next(); 
             this.UpdateStatus(); 
         }
-        public void Dispose() { this.Status = Status.RUNNING; _noRoutine = false; }
+        public void Dealloc() { this.Status = Status.RUNNING; _noRoutine = false; }
 
         void Next()
         {

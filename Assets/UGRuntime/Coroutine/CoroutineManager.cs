@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UGFramework.Pool;
+using UGFramework.Editor.Inspector;
 
 namespace UGFramework.Coroutine
 {
@@ -13,6 +14,7 @@ namespace UGFramework.Coroutine
     {
         int _currentFrameCount = -1;
 
+        [ShowInInspector]
         Dictionary<CoroutineGroup, LinkedList<Coroutine>> _coroutineGroups = new Dictionary<CoroutineGroup,LinkedList<Coroutine>>();
 
         HashSet<Coroutine> _removingCoroutines = new HashSet<Coroutine>();
