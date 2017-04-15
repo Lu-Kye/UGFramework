@@ -38,6 +38,7 @@ namespace UGFramework.Res
             {
                 if (dependence.StartsWith("Assets/" + ResConfig.RES_ROOT))
                     continue;
+                
 
                 var assetName = dependence;
                 var assetBundleName = Path.GetDirectoryName(dependence).ReplaceFirst("Assets", ResConfig.DEPENDENCIES_ROOT).ToLower() + ResConfig.BUNDLE_EXTENSION;

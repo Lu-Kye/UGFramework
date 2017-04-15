@@ -7,7 +7,7 @@ namespace UGFramework.Res
         public const string VERSION = "1.0.0";
 
         public const string BUNDLE_EXTENSION = ".assetbundle";
-        public const string EDITOR_LUA_EXTENSION = ".lua";
+        public const string LUA_EXTENSION = ".lua";
         public const string MOBILE_LUA_EXTENSION = ".txt";
 
         public const string RES_ROOT = "Res"; 

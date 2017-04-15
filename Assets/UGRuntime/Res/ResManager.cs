@@ -37,25 +37,30 @@ namespace UGFramework.Res
         */
         public byte[] LoadLua(string path)
         {
-            path = ResConfig.LUA_ROOT + "/" + path;
-            byte[] bytes = null;
+            var fullpath = ResConfig.LUA_ROOT + "/" + path; byte[] bytes = null;
 
             // Editor
             if (Application.isMobilePlatform == false && this.Simulate == false)
             {
-                path = Application.dataPath + "/" + ResConfig.RES_ROOT + "/" + path + ResConfig.EDITOR_LUA_EXTENSION;
-                if (File.Exists(path) == false)
-                {
-                    LogManager.Warning(string.Format("Lua file not exists({0})", path));
-                    return bytes;
-                }
-                return FileUtility.ReadFileBytes(path);
+                fullpath = Application.dataPath + "/" + ResConfig.RES_ROOT + "/" + fullpath + ResConfig.LUA_EXTENSION;
+                if (File.Exists(fullpath) == false)
+                    return this._LoadLuaFromResources(path);
+                return FileUtility.ReadFileBytes(fullpath);
             }
 
             // Mobile
-            path = (path + ResConfig.MOBILE_LUA_EXTENSION).ToLower();
-            this.LoadTxtAtPath(path, ref bytes);
+            fullpath = (fullpath + ResConfig.MOBILE_LUA_EXTENSION).ToLower();
+            this.LoadTxtAtPath(fullpath, ref bytes);
+            if (bytes == null)
+                return this._LoadLuaFromResources(path);
             return bytes;
+        }
+        byte[] _LoadLuaFromResources(string path)
+        {
+            var textAsset = Resources.Load<TextAsset>(path + ResConfig.LUA_EXTENSION);
+            if (textAsset != null)
+                return textAsset.bytes;
+            return null;
         }
 
         // @path : start from UIRoot(exclude), like "Login/Login(prefab)"
