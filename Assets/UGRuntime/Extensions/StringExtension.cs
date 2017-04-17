@@ -1,22 +1,25 @@
-public static class StringExtension
+namespace UGFramework.Extension.String
 {
-    public static string ReplaceFirst(this string text, string search, string replace)
+    public static class StringExtension
     {
-        int pos = text.IndexOf(search);
-        if (pos < 0)
+        public static string ReplaceFirst(this string text, string search, string replace)
         {
-            return text;
+            int pos = text.IndexOf(search);
+            if (pos < 0)
+            {
+                return text;
+            }
+            return text.Substring(0, pos) + replace + text.Substring(pos + search.Length);
         }
-        return text.Substring(0, pos) + replace + text.Substring(pos + search.Length);
-    }
 
-    public static string ReplaceLast(this string text, string search, string replace)
-    {
-        int pos = text.LastIndexOf(search);
-        if (pos < 0)
+        public static string ReplaceLast(this string text, string search, string replace)
         {
-            return text;
+            int pos = text.LastIndexOf(search);
+            if (pos < 0)
+            {
+                return text;
+            }
+            return text.Substring(0, pos) + replace + text.Substring(pos + search.Length);
         }
-        return text.Substring(0, pos) + replace + text.Substring(pos + search.Length);
     }
 }

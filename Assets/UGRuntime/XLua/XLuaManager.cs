@@ -38,17 +38,20 @@ namespace UGFramework
             });
         }
 
-        public void LuaStart(bool startGame = false)
+        public void Init()
         {
+            _gameStarted = false;
             _loadedLuas.Clear();
-
             for (int i = 0; i < this.PreloadLuas.Length; i++) 
             {
                 this.Load(this.PreloadLuas[i]);
             }
             this.InitLuaFunctions();
-            
-            if (startGame && _start != null)
+        }
+
+        public void LuaStart()
+        {
+            if (_gameStarted == false && _start != null)
             {
                 _gameStarted = true;
                 _start();
