@@ -30,9 +30,15 @@ namespace UGFramework.Res
             {
                 var filename = Path.GetFileName(buildInfo.assetBundleName);
                 var directory = buildInfo.assetBundleName.ReplaceLast("/" + filename, "").ToLower(); 
+
                 var targetPath = outpathRoot + "/" + directory;
-                Directory.CreateDirectory(targetPath);
-                File.Copy(buildInfo.assetNames[0], targetPath + "/" + filename.ReplaceLast(ResConfig.BUNDLE_EXTENSION, "").ToLower());
+                if (Directory.Exists(targetPath) == false)
+                    Directory.CreateDirectory(targetPath);
+
+                var targetFile = targetPath + "/" + filename.ReplaceLast(ResConfig.BUNDLE_EXTENSION;
+                if (File.Exists(targetFile))
+                    File.Delete(targetFile);
+                File.Copy(buildInfo.assetNames[0], targetFile, "").ToLower());
             }
         }
 

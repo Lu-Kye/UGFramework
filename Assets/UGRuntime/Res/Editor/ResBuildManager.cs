@@ -26,8 +26,8 @@ namespace UGFramework.Res
 
         static void BeforeBuild(BuildTarget targetPlatform)
         {
-            Clear();
-            Directory.CreateDirectory(_outPath);
+            if (Directory.Exists(_outPath) == false)
+                Directory.CreateDirectory(_outPath);
             PlatformUtility.Switch(targetPlatform);
         }
 

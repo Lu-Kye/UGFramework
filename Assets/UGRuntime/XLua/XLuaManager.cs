@@ -68,9 +68,10 @@ namespace UGFramework
 
         void Update()
         {
-            if (_gameStarted == false || _update != null)
-                _update();
+            if (_gameStarted == false || _update == null)
+                return;
 
+            _update();
             if ((Time.realtimeSinceStartup - _lastGCTime) > this.GCInterval)
             {
                 _lastGCTime = Time.realtimeSinceStartup;
