@@ -22,6 +22,13 @@ namespace UGFramework.Touch
 
         public Vector3 PrevMousePosition;
         public Vector3 MousePosition;
+        public float DeltaCM 
+        {
+            get
+            {
+                return Vector3.Distance(PrevMousePosition, MousePosition) / TouchManager.Instance.ScreenPixelsPerCm; 
+            }
+        }
 
         UnityEngine.Coroutine _tryStartDraggingCo;
         IEnumerator TryStartDragging(TouchInfo touchInfo)
@@ -34,8 +41,8 @@ namespace UGFramework.Touch
             }
             _state = CheckerState.SuccessAndChecking;
             this.AddTrackingTouch(touchInfo);
-            this.PrevMousePosition = touchInfo.Position;
-            this.MousePosition = Input.mousePosition; 
+            this.PrevMousePosition = touchInfo.PrevPosition;
+            this.MousePosition = touchInfo.Position;
         }
 
         void StartTryDragging(TouchInfo touchInfo)
@@ -53,8 +60,9 @@ namespace UGFramework.Touch
         {
             if (touchInfos.Count > 1)
             {
-                if (_state == CheckerState.SuccessAndChecking)
+                if (_state == CheckerState.SuccessAndChecking || _state == CheckerState.Checking)
                 {
+                    this.StopTryDragging();
                     _isDragging = false;
                     this.Handler(this);
                 }
@@ -74,14 +82,19 @@ namespace UGFramework.Touch
                 return;
 
             _state = CheckerState.Checking;
-            this.StartTryDragging(touchInfo);
+            this.StartTryDragging(touchInfos[0]);
         }
 
         protected override void OnTouchesMoved(List<TouchInfo> trackingTouchInfos, List<TouchInfo> touchInfos)
         {
             if (touchInfos.Count > 1)
             {
-                this.StopTryDragging();
+                if (_isDragging)
+                {
+                    this.StopTryDragging();
+                    _isDragging = false;
+                    this.Handler(this);
+                }
                 _state = CheckerState.Failed;
                 return;
             }

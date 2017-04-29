@@ -7,6 +7,7 @@ using System.Text;
 using UGFramework.Editor;
 using UGFramework.Log;
 using UGFramework.Utility;
+using UGFramework.Extension.String;
 using UnityEditor;
 using UnityEngine;
 

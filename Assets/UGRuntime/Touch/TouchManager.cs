@@ -6,6 +6,8 @@ namespace UGFramework.Touch
 {
     public class TouchManager : MonoBehaviour
     {
+        public static TouchManager Instance { get; private set; }
+
         [ShowInInspector(IsReadonly = true)]
         TouchInfo[] _cachedTouches; 
         List<TouchInfo> _curTouches = new List<TouchInfo>();
@@ -24,6 +26,34 @@ namespace UGFramework.Touch
         }
 
         AbstractChecker[] _checkers;
+
+        private const float INCHES_2_CENTIMETERS = 2.54f;
+        public float ScreenPixelsPerCm
+        {
+            get
+            {
+                float fallbackDpi = 72f;
+                #if UNITY_ANDROID
+                    // Android MDPI setting fallback
+                    // http://developer.android.com/guide/practices/screens_support.html
+                    fallbackDpi = 160f;
+                #elif (UNITY_WP8 || UNITY_WP8_1 || UNITY_WSA || UNITY_WSA_8_0)
+                    // Windows phone is harder to track down
+                    // http://www.windowscentral.com/higher-resolution-support-windows-phone-7-dpi-262
+                    fallbackDpi = 92f;
+                #elif UNITY_IOS
+                    // iPhone 4-6 range
+                    fallbackDpi = 326f;
+                #endif
+
+                return Screen.dpi == 0f ? fallbackDpi / INCHES_2_CENTIMETERS : Screen.dpi / INCHES_2_CENTIMETERS;
+            }
+        }
+
+        void Awake()
+        {
+            Instance = this;
+        }
 
         void Start()
         {

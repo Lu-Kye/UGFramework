@@ -16,11 +16,25 @@ namespace UGFramework.Touch
             get { return _isPinching; }  
         }
 
+    	public float MinimumScaleDistanceToRecognize = 0.5f;
+        float _firstDistance = 0;
+        float _beganDistance = 0;
+        float _previousDistance = 0;
+
         public Vector3 Mouse0Position { get; private set; } 
         public Vector3 PrevMouse0Position { get; private set; } 
         public Vector3 Mouse1Position { get; private set; } 
         public Vector3 PrevMouse1Position { get; private set; } 
-        public float Delta { get; private set; }
+
+        float _deltaScale;
+        public float DeltaScale 
+        {
+            get { return _deltaScale; }
+            private set
+            {
+                _deltaScale = value * 10;
+            }
+        }
 
         protected override void OnTouchesBegan(List<TouchInfo> touchInfos)
         {
@@ -35,8 +49,22 @@ namespace UGFramework.Touch
                 _state = CheckerState.Failed;
                 return;
             }
+
             this.AddTrackingTouches(touchInfos);
-            _state = CheckerState.SuccessAndChecking;
+            _firstDistance = this.DistanceBetweenTrackedTouches(touchInfos);
+            _previousDistance = _firstDistance;
+            _state = CheckerState.Began;
+        }
+
+        float DistanceBetweenTrackedTouches(List<TouchInfo> trackingTouchInfos)
+        {
+            this.PrevMouse0Position = trackingTouchInfos[0].PrevPosition;
+            this.Mouse0Position = trackingTouchInfos[0].Position;
+            this.PrevMouse1Position = trackingTouchInfos[1].PrevPosition;
+            this.Mouse1Position = trackingTouchInfos[1].Position;
+
+            var distance = Vector3.Distance(this.Mouse0Position, this.Mouse1Position);
+            return Mathf.Max(0.0001f, distance) / TouchManager.Instance.ScreenPixelsPerCm;
         }
 
         protected override void OnTouchesMoved(List<TouchInfo> trackingTouchInfos, List<TouchInfo> touchInfos)
@@ -48,20 +76,32 @@ namespace UGFramework.Touch
                     _isPinching = false;
                     this.Handler(this);
                 }
-                _state = CheckerState.Checking;
+                _state = CheckerState.Failed;
                 return;
             }
-            if (_state == CheckerState.SuccessAndChecking)
+            
+            var currentDistance = this.DistanceBetweenTrackedTouches(trackingTouchInfos);
+            if (_state == CheckerState.Began || _state == CheckerState.Checking)
+            {
+                // if (Mathf.Abs(currentDistance - _previousDistance) < this.MinimumScaleDistanceToRecognize)
+                // {
+                //     _state = CheckerState.Checking;
+                //     return;
+                // }
+
+                _isPinching = true;
+                this.DeltaScale = (currentDistance - _previousDistance) / _firstDistance;
+                _beganDistance = currentDistance;
+                _state = CheckerState.SuccessAndChecking;
+            }
+            else if (_state == CheckerState.SuccessAndChecking)
             {
                 _isPinching = true;
-                this.PrevMouse0Position = trackingTouchInfos[0].PrevPosition;
-                this.Mouse0Position = trackingTouchInfos[0].Position;
-                this.PrevMouse1Position = trackingTouchInfos[1].PrevPosition;
-                this.Mouse1Position = trackingTouchInfos[1].Position;
-                this.Delta = Vector3.Distance(this.Mouse0Position, this.Mouse1Position) - Vector3.Distance(this.PrevMouse0Position, this.PrevMouse1Position);
-                this.Delta *= Time.deltaTime;
-                this.Handler(this);
+                this.DeltaScale = (currentDistance - _previousDistance) / _beganDistance;
             }
+
+            _previousDistance = currentDistance;
+            this.Handler(this);
         }
 
         protected override void OnTouchesEnd(List<TouchInfo> trackingTouchInfos, List<TouchInfo> touchInfos)
@@ -71,6 +111,7 @@ namespace UGFramework.Touch
             {
                 _isPinching = false;
                 this.Handler(this);
+                _state = CheckerState.Success;
             }
         }
     }

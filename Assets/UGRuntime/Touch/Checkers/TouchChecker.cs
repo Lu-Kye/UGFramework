@@ -8,7 +8,8 @@ namespace UGFramework.Touch
     {
         public static TouchChecker Instance { get { return GetInstance<TouchChecker>(); } }
 
-        public Action<TouchChecker> Handler = delegate {};
+        public Action<TouchChecker> Handler = delegate { };
+        public Action<TouchChecker> TouchBegin = delegate { };
 
         public Vector3 TouchPosition;
 
@@ -33,12 +34,13 @@ namespace UGFramework.Touch
             this.AddTrackingTouch(touchInfo);
             this.TouchPosition = touchInfos[0].Position;
             _moveDis = 0;
+            this.TouchBegin(this);
         }
 
         protected override void OnTouchesMoved(List<TouchInfo> trackingTouchInfos, List<TouchInfo> touchInfos)
         {
             base.OnTouchesMoved(trackingTouchInfos, touchInfos);
-            _moveDis = Vector3.Distance(trackingTouchInfos[0].Position, this.TouchPosition);
+            _moveDis = Vector3.Distance(trackingTouchInfos[0].Position, this.TouchPosition) / TouchManager.Instance.ScreenPixelsPerCm;
         }
 
         protected override void OnTouchesEnd(List<TouchInfo> trackingTouchInfos, List<TouchInfo> touchInfos)

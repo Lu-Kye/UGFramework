@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.IO;
 using UnityEditor;
+using UGFramework.Extension.String;
 
 namespace UGFramework.Res
 {
@@ -35,10 +36,11 @@ namespace UGFramework.Res
                 if (Directory.Exists(targetPath) == false)
                     Directory.CreateDirectory(targetPath);
 
-                var targetFile = targetPath + "/" + filename.ReplaceLast(ResConfig.BUNDLE_EXTENSION;
+                var targetFile = targetPath + "/" + filename.ReplaceLast(ResConfig.BUNDLE_EXTENSION, "").ToLower();
                 if (File.Exists(targetFile))
                     File.Delete(targetFile);
-                File.Copy(buildInfo.assetNames[0], targetFile, "").ToLower());
+
+                File.Copy(buildInfo.assetNames[0], targetFile);
             }
         }
 

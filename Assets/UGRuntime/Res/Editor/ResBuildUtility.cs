@@ -3,6 +3,7 @@ using System.IO;
 using System.Linq;
 using UnityEditor;
 using UGFramework.Log;
+using UGFramework.Extension.String;
 
 namespace UGFramework.Res
 {
