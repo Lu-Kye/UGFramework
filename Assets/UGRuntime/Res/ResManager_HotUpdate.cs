@@ -26,6 +26,8 @@ namespace UGFramework.Res
             public int Count;
         }
 
+        public bool EnableHotUpdate = true;
+
         void InitForHotUpdate()
         {
         }
@@ -53,6 +55,12 @@ namespace UGFramework.Res
         */
         public void HotUpdate()
         {
+            if (this.EnableHotUpdate == false)
+            {
+                this.NotifyNoHotUpdate();
+                return;
+            }
+
             if (Application.isMobilePlatform == false && this.Simulate == false)
             {
                 this.NotifyNoHotUpdate();
@@ -146,12 +154,6 @@ namespace UGFramework.Res
                     this.NotifyHotUpdate(processInfo);
                 }));
             }
-        }
-
-        [ContextMenu("TestHotUpdate")]
-        void TestHotUpdate()
-        {
-            this.HotUpdate();
         }
     }
 }

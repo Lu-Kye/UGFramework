@@ -16,6 +16,7 @@ namespace UGFramework.Res
         public const string RES_ROOT = "Res"; 
         public const string DEPENDENCIES_ROOT = "dependencies"; 
         public const string LUA_ROOT = "Lua"; 
+        public const string SCENE_ROOT = "Scene";
 
 #region UI
         public const string UI_ROOT = "UI";

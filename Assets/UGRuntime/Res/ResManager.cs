@@ -63,11 +63,24 @@ namespace UGFramework.Res
             return null;
         }
 
-        // @path : start from UIRoot(exclude), like "Login/Login(prefab)"
-        public GameObject LoadUI(string path)
+        // @return : scene path
+        public string LoadScene(string sceneName)
         {
-            path = ResConfig.UI_ROOT + "/" + path + ".prefab";
-            return this.Load<GameObject>(path);
+            string path = ResConfig.SCENE_ROOT + "/" + sceneName;
+            // Editor
+            if (Application.isMobilePlatform == false && this.Simulate == false)
+            {
+                path = ResConfig.RES_ROOT + "/" + path;
+                return path;
+            }
+
+            // Mobile or Simulate
+            path = path.ToLower() + ".unity";
+            var loadedAssetBundle = this.LoadAssetBundle(path);
+            if (loadedAssetBundle == null)
+                return null;
+
+            return loadedAssetBundle.AssetBundle.GetAllScenePaths()[0];
         }
 
         /**

@@ -13,6 +13,23 @@ namespace UGFramework.Res
         {
         }
 
+        void Unload(string path, bool unloadAllLoaded)
+        {
+            if (_cachedAssets.ContainsKey(path) == false)
+                return;
+            
+            // Unload asset bundle
+            this.UnloadAssetBundle(path, unloadAllLoaded);
+
+            // Unload asset
+            if (unloadAllLoaded)
+            {
+                var asset = _cachedAssets[path];
+                Resources.UnloadAsset(asset);
+                _cachedAssets.Remove(path);
+            }
+        }
+
         // Only load txt files
         string LoadTxtAtPath(string path, ref byte[] bytes)
         {
@@ -56,47 +73,41 @@ namespace UGFramework.Res
             return txt;
         }
 
-        T LoadFromCacheOrBundle<T>(string path)
+        T LoadFromCacheOrBundle<T>(string path, string assetName = null)
             where T : UnityEngine.Object
         {
-            if (_cachedAssets.ContainsKey(path))
+            var bundlePath = path;
+            var cachedAssetPath = string.IsNullOrEmpty(assetName) ? path : assetName;
+            if (_cachedAssets.ContainsKey(cachedAssetPath))
             {
-                return _cachedAssets[path] as T;
+                if (_cachedAssets[cachedAssetPath] == null)
+                    _cachedAssets.Remove(cachedAssetPath);
+                else
+                    return _cachedAssets[cachedAssetPath] as T;
             }
             
     #if UNITY_DEBUG
             var startTime = Time.realtimeSinceStartup;
     #endif
 
-            var assetBundle = this.LoadAssetBundle(path);
-            if (assetBundle == null)
+            var loadedAssetBundle = this.LoadAssetBundle(bundlePath);
+            if (loadedAssetBundle == null) 
+            {
+                LogManager.Error("assetBundle is null:" + bundlePath);
                 return null;
+            }
 
     #if UNITY_DEBUG
             LogManager.Log(string.Format("ResManager::LoadFromCacheOrBundle({0}) elapsed time:{1}", path, Time.realtimeSinceStartup - startTime));
     #endif
 
-            var asset = _cachedAssets[path] = assetBundle.LoadAllAssets()[0];
-            return asset as T;
-        }
-
-        // Before do test, build assetbundles at first (Guardian->Res->Build(IOS or other platforms))
-        // Some simulate test cases
-        [ContextMenu("TestLoadLuaInMobile(Simulate)")]
-        public void TestLoadLuaInMobile()
-        {
-            byte[] bytes = null;
-            var txt = this.LoadTxtAtPath("lua/main.txt", ref bytes);
-            if (txt == null)
-                LogManager.Log("txt is null");
+            T asset = null;
+            if (string.IsNullOrEmpty(assetName))
+                asset = loadedAssetBundle.AssetBundle.LoadAllAssets<T>()[0];
             else
-                LogManager.Log(txt);
-        }
-        [ContextMenu("TestLoadBundleInMobile(Simulate)")]
-        public void TestLoadBundleInMobile()
-        {
-            var go = this.LoadFromCacheOrBundle<GameObject>("ui/prefabs/fullexample/fullexample.prefab");
-            LogManager.Log(go.name);
+                asset = loadedAssetBundle.AssetBundle.LoadAsset<T>(assetName);
+            _cachedAssets[cachedAssetPath] = asset;
+            return asset;
         }
     }
 }
