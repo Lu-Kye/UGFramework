@@ -20,6 +20,7 @@ namespace UGFramework.Res
 
             buildInfo.assetBundleName = buildingFile.ReplaceFirst(_rootPath + "/Assets/" + ResConfig.RES_ROOT + "/", "") + ResConfig.BUNDLE_EXTENSION;
             buildInfo.assetNames = new string[] { buildingFile.ReplaceFirst(_rootPath + "/", "") };
+
             return buildInfo;
         }
 
@@ -27,20 +28,28 @@ namespace UGFramework.Res
 
         public override void DoOverrideBuild(string outpathRoot, List<AssetBundleBuild> filteredBuildInfos)
         {
+            var buildInfos = new List<AssetBundleBuild>();
+
             foreach (var buildInfo in _trackingBuildInfos.Values)
             {
                 var filename = Path.GetFileName(buildInfo.assetBundleName);
                 var directory = buildInfo.assetBundleName.ReplaceLast("/" + filename, "").ToLower(); 
-
                 var targetPath = outpathRoot + "/" + directory;
                 if (Directory.Exists(targetPath) == false)
                     Directory.CreateDirectory(targetPath);
-
+                
                 var targetFile = targetPath + "/" + filename.ReplaceLast(ResConfig.BUNDLE_EXTENSION, "").ToLower();
                 if (File.Exists(targetFile))
                     File.Delete(targetFile);
 
                 File.Copy(buildInfo.assetNames[0], targetFile);
+
+                buildInfos.Add(buildInfo);
+            }
+
+            foreach (var buildInfo in buildInfos)
+            {
+                filteredBuildInfos.Remove(buildInfo);
             }
         }
 
