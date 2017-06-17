@@ -16,6 +16,14 @@ namespace UGFramework.Utility
             return bytes;
         }
 
+        public static string ReadFile(string fullpath)
+        {
+            var bytes = ReadFileBytes(fullpath);
+            if (bytes == null)
+                return null;
+            return Encoding.UTF8.GetString(bytes);
+        }
+
         public static void WriteFile(string fullpath, string text, bool append = false) 
         {
             var bytes = Encoding.UTF8.GetBytes(text);
@@ -29,6 +37,9 @@ namespace UGFramework.Utility
                 Directory.CreateDirectory(directory);
             if (append == false)
             {
+                if (File.Exists(fullpath) == false)
+                    File.Delete(fullpath);
+
                 using (var fs = File.Open(fullpath, FileMode.OpenOrCreate, FileAccess.Write, FileShare.ReadWrite))
                 {
                     fs.Write(bytes, 0, bytes.Length);

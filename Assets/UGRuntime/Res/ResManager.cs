@@ -9,10 +9,28 @@ namespace UGFramework.Res
 {
     public partial class ResManager : MonoBehaviour
     {
+        // Resources hotupdating/uncompress process info
+        public struct ProcessInfo
+        {
+            // Current updating filepath
+            public string File;
+
+            // If error is empty meaning success
+            public string Error;
+
+            // Index of current updating file in updating files
+            public int Index;
+
+            // Count of updating files
+            public int Count;
+        }
+
         public static ResManager Instance { get; private set; }
         ResManager() {}     
 
         WWWSyncAgent _wwwSyncAgent;
+
+        public float Timeout = 3.0f;
 
         public bool Simulate = false;
 
@@ -20,14 +38,15 @@ namespace UGFramework.Res
         {
             Instance = this;
             _wwwSyncAgent = GameObjectUtility.GetComponent<WWWSyncAgent>(this.gameObject);
-            _wwwSyncAgent.Timeout = 5f;
+            _wwwSyncAgent.Timeout = this.Timeout;
         }
 
         public void Init()
         {
-            InitForAssetBundle();
-            InitForLoader();
-            InitForHotUpdate();
+            this.InitForAssetBundle();
+            this.InitForLoader();
+            this.InitForHotUpdate();
+            this.InitForCompress();
         }
 
         /**

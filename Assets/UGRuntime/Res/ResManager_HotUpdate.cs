@@ -10,22 +10,6 @@ namespace UGFramework.Res
 {
     public partial class ResManager
     {
-        // Resources hot updating process info
-        public struct ProcessInfo
-        {
-            // Current updating filepath
-            public string File;
-
-            // If error is empty meaning success
-            public string Error;
-
-            // Index of current updating file in updating files
-            public int Index;
-
-            // Count of updating files
-            public int Count;
-        }
-
         public bool EnableHotUpdate = true;
 
         void InitForHotUpdate()
@@ -53,7 +37,7 @@ namespace UGFramework.Res
         /**
         * Call HotUpdate when game starting or loading
         */
-        public void HotUpdate()
+        public void TryHotUpdate()
         {
             if (this.EnableHotUpdate == false)
             {
@@ -123,7 +107,7 @@ namespace UGFramework.Res
             {
                 var diffInfo = diffInfos[i];
                 var path = diffInfo.File;
-                yield return this.StartCoroutine(this.DownloadAssetAsync(path, (www) => {
+                yield return this.StartCoroutine(this.DownloadServerAssetAsync(path, (www) => {
                     var processInfo = new ProcessInfo();
                     processInfo.File = diffInfo.File;
                     processInfo.Index = i;

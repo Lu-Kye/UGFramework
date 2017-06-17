@@ -26,9 +26,13 @@ namespace UGFramework.Res
             return text;
         }
 
-        IEnumerator DownloadAssetAsync(string path, Action<WWW> callback)
+        IEnumerator DownloadServerAssetAsync(string path, Action<WWW> callback)
         {
-            var url = ResConfig.SERVER_URL + "/" + path + "?" + TimeUtility.Timestamp;
+            var url = ResConfig.SERVER_URL + "/" + path;
+            yield return this.StartCoroutine(this.DownloadAssetAsync(url, callback));
+        }
+        IEnumerator DownloadAssetAsync(string url, Action<WWW> callback)
+        {
             using (var www = new WWW(url))
             {
                 yield return www;
