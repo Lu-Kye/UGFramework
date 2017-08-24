@@ -5,7 +5,7 @@ using UnityEditor;
 using System.Collections;
 using System.Linq;
 
-namespace UGFramework.Editor.Inspector
+namespace UGFramework.UGEditor.Inspector
 {
     /**
      * --- DOC BEGIN ---
@@ -58,12 +58,14 @@ namespace UGFramework.Editor.Inspector
             }
         }
         public static bool ForceFoldout { get; set; }
-        public static bool DrawFoldout(GUIContent content)
+        public static bool DrawFoldout(GUIContent content, bool defaultFoldout = false)
         {
             if (foldoutRecords.ContainsKey(Object) == false)
                 foldoutRecords[Object] = new Dictionary<string, bool>();
             if (foldoutRecords[Object].ContainsKey(Path) == false)
-                foldoutRecords[Object][Path] = false;
+            {
+                foldoutRecords[Object][Path] = defaultFoldout;
+            }
             
             foldoutRecords[Object][Path] = EditorGUILayout.Foldout(foldoutRecords[Object][Path], content, true);
             // Debug.Log("DrawFoldout " + Path);
@@ -73,7 +75,7 @@ namespace UGFramework.Editor.Inspector
             var mousePos = evt.mousePosition;
             if (evt.type == EventType.ContextClick && contentRect.Contains(mousePos)) {
                 SelectedPath = Path;
-                EditorUtility.DisplayPopupMenu(new Rect(mousePos.x, mousePos.y, 0, 0), TopbarConfig.INSPECTOR, null);
+                EditorUtility.DisplayPopupMenu(new Rect(mousePos.x, mousePos.y, 0, 0), MenuConfig.INSPECTOR, null);
                 Event.current.Use();
             }
 
@@ -84,12 +86,12 @@ namespace UGFramework.Editor.Inspector
             int width = (Path.Split('/').Length - 1) * 1;
             EditorGUILayout.LabelField("", GUILayout.Width(width));
         }
-        public static bool DrawTabAndFoldout(GUIContent content)
+        public static bool DrawTabAndFoldout(GUIContent content, bool defaultFoldout = false)
         {
             var foldout = false;
             EditorGUILayout.BeginHorizontal();
             DrawTab();
-            foldout = DrawFoldout(content);
+            foldout = DrawFoldout(content, defaultFoldout);
             EditorGUILayout.EndHorizontal();
             return foldout;
         }
@@ -103,9 +105,17 @@ namespace UGFramework.Editor.Inspector
             return MemberDrawer.Draw(info, content);
         }
 
-        public static bool DrawObject(object value, GUIContent content = null)
+        public static bool DrawObject(object value, GUIContent content = null, bool defaultFoldout = false)
         {
-            return ObjectDrawer.Draw(value, content);
+            return ObjectDrawer.Draw(value, content, defaultFoldout);
+        }
+
+        public static bool DrawBool(ref bool value, GUIContent content)
+        {
+            var nextValue = EditorGUILayout.Toggle(content, value);
+            var changed = value != nextValue;
+            value = nextValue;
+            return changed;
         }
 
         public static bool DrawInt(ref int value, GUIContent content)

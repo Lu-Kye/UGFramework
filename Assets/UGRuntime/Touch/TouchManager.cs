@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 using UnityEngine;
-using UGFramework.Editor.Inspector;
+using UGFramework.UGEditor.Inspector;
 
 namespace UGFramework.Touch
 {

@@ -1,69 +1,87 @@
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
+using UnityEngine;
 using UnityEditor;
-using UGFramework.Extension.String;
+using UGFramework.Extension;
+using UGFramework.Log;
 
 namespace UGFramework.Res
 {
     public class ResLuaBuildFilter : ResAbstractBuildFilter
     {
-        public override string FileExtension { get { return ".lua"; } }
+        public override string FileExtension { get { return "unknown"; } }
         public ResLuaBuildFilter() : base() {}
 
-        public override AssetBundleBuild PrepareBuild(string filepath)
+        List<string> _tmpFiles = new List<string>();
+
+        public override void OverrideBuild(string outpathRoot, List<AssetBundleBuild> filteredBuildInfos)
         {
-            var buildInfo = base.PrepareBuild(filepath);
-            
-            // Change lua file to text asset
-            var buildingFile = filepath.ReplaceLast(this.FileExtension, ResConfig.MOBILE_LUA_EXTENSION);
-            File.Move(filepath, buildingFile);
-
-            buildInfo.assetBundleName = buildingFile.ReplaceFirst(_rootPath + "/Assets/" + ResConfig.RES_ROOT + "/", "") + ResConfig.BUNDLE_EXTENSION;
-            buildInfo.assetNames = new string[] { buildingFile.ReplaceFirst(_rootPath + "/", "") };
-
-            return buildInfo;
-        }
-
-        protected override bool IsOverrideBuild(string trackingFile, AssetBundleBuild buildInfo) { return true; }
-
-        public override void DoOverrideBuild(string outpathRoot, List<AssetBundleBuild> filteredBuildInfos)
-        {
-            var buildInfos = new List<AssetBundleBuild>();
-
-            foreach (var buildInfo in _trackingBuildInfos.Values)
+            for (int i = filteredBuildInfos.Count - 1; i >= 0; --i)
             {
-                var filename = Path.GetFileName(buildInfo.assetBundleName);
-                var directory = buildInfo.assetBundleName.ReplaceLast("/" + filename, "").ToLower(); 
-                var targetPath = outpathRoot + "/" + directory;
-                if (Directory.Exists(targetPath) == false)
-                    Directory.CreateDirectory(targetPath);
-                
-                var targetFile = targetPath + "/" + filename.ReplaceLast(ResConfig.BUNDLE_EXTENSION, "").ToLower();
+                var buildInfo = filteredBuildInfos[i];
+                if (buildInfo.assetBundleName.StartsWith("Assets/" + ResConfig.RES_ROOT + "/" + ResConfig.LUA_ROOT) ||
+                    buildInfo.assetBundleName.StartsWith(ResConfig.DEPENDENCIES_ROOT + "/" + ResConfig.RES_ROOT + "/" + ResConfig.LUA_ROOT))
+                {
+                    filteredBuildInfos.RemoveAt(i);
+                }
+            }
+
+            var resPath = Application.dataPath + "/" + ResConfig.RES_ROOT + "/" + ResConfig.LUA_ROOT;
+            var files = ResBuildUtility.GetFiles(resPath);
+            _tmpFiles.Clear();
+
+            foreach (var file in files)
+            {
+                if (file.EndsWith(ResConfig.LUA_EXTENSION) == false)
+                    continue;
+
+                var sourceFile = file;
+                var targetFile = sourceFile.ReplaceLast(ResConfig.LUA_EXTENSION, ResConfig.MOBILE_LUA_EXTENSION);
+
                 if (File.Exists(targetFile))
                     File.Delete(targetFile);
+                File.Copy(sourceFile, targetFile);
+                _tmpFiles.Add(targetFile);
 
-                File.Copy(buildInfo.assetNames[0], targetFile);
+                var assetBundleName = targetFile.ReplaceFirst(Application.dataPath + "/" + ResConfig.RES_ROOT + "/", "") + ResConfig.BUNDLE_EXTENSION;
+                var assetName = targetFile.ReplaceFirst(_rootPath + "/", "");
 
-                buildInfos.Add(buildInfo);
+                var index = ResBuildUtility.TryGetBuildInfo(filteredBuildInfos, assetBundleName);
+                if (index == -1)
+                {
+                    var buildInfo = new AssetBundleBuild();
+                    buildInfo.assetNames = new string[] { assetName };
+                    buildInfo.assetBundleName = assetBundleName;
+                    filteredBuildInfos.Add(buildInfo);
+
+                    LogManager.Log("lua assetbundle " + assetBundleName);
+                }
+                else
+                {
+                    var buildInfo = filteredBuildInfos[index];
+                    var assetNames = buildInfo.assetNames.ToList();
+                    if (assetNames.Contains(assetName))
+                        continue;
+
+                    assetNames.Add(assetName);
+                    buildInfo.assetNames = assetNames.ToArray();
+                    filteredBuildInfos[index] = buildInfo;
+
+                    LogManager.Log("lua assetbundle " + assetBundleName);
+                }
             }
-
-            foreach (var buildInfo in buildInfos)
-            {
-                filteredBuildInfos.Remove(buildInfo);
-            }
+            AssetDatabase.Refresh();
         }
 
         public override void AfterBuild()
         {
-            base.AfterBuild();
-
-            // Revert text asset to lua file
-            foreach (var buildingFile in _trackingFiles)
+            for (int i = 0; i < _tmpFiles.Count; ++i)
             {
-                var filepath = buildingFile.ReplaceLast(this.FileExtension, ResConfig.MOBILE_LUA_EXTENSION);
-                File.Move(filepath, buildingFile);
+                var tmpFile = _tmpFiles[i];
+                if (File.Exists(tmpFile))
+                    File.Delete(tmpFile);
             }
-            AssetDatabase.Refresh();
         }
     }
 }

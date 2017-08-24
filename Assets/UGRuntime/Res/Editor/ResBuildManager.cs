@@ -4,10 +4,10 @@ using System.IO;
 using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
-using UGFramework.Editor;
+using UGFramework.UGEditor;
 using UGFramework.Log;
 using UGFramework.Utility;
-using UGFramework.Extension.String;
+using UGFramework.Extension;
 using UnityEditor;
 using UnityEngine;
 
@@ -15,36 +15,88 @@ namespace UGFramework.Res
 {
     public static class ResBuildManager
     {
+        static BuildTarget _target;
+
         // Save builded resources to out path
-        static readonly string _outPath = Application.streamingAssetsPath + "/" + ResConfig.RES_ROOT.ToLower();
+        static string _outPath 
+        {
+            get
+            {
+                string platformPrefixPath = null;
+                if (_target == BuildTarget.iOS)
+                {
+                    platformPrefixPath = ResConfig.PLATFORM_PREFIX_IOS;
+                }
+                else if (_target == BuildTarget.Android)
+                {
+                    platformPrefixPath = ResConfig.PLATFORM_PREFIX_ANDROID;
+                }
+                else if (_target == BuildTarget.StandaloneWindows64)
+                {
+                    platformPrefixPath = ResConfig.PLATFORM_PREFIX_WIN;
+                }
+                else if (_target == BuildTarget.StandaloneOSXUniversal)
+                {
+                    platformPrefixPath = ResConfig.PLATFORM_PREFIX_OSX;
+                }
+                return Application.streamingAssetsPath + "/" + platformPrefixPath + "/" + ResConfig.RES_ROOT.ToLower();
+            }
+        }
+
+        static BuildAssetBundleOptions _options = 
+                    // BuildAssetBundleOptions.DisableWriteTypeTree |
+                    // BuildAssetBundleOptions.DeterministicAssetBundle |
+                    // BuildAssetBundleOptions.StrictMode |
+                    // BuildAssetBundleOptions.ForceRebuildAssetBundle |
+                    BuildAssetBundleOptions.ChunkBasedCompression;
+                    // BuildAssetBundleOptions.UncompressedAssetBundle;
 
         public static void Clear()
         {
-            if (Directory.Exists(_outPath))
-                Directory.Delete(_outPath, true);
+            EditorUtility.DisplayProgressBar(
+                "Clear AssetBundles", 
+                string.Format("Removing..."),
+                1f);
+            if (Directory.Exists(Application.streamingAssetsPath))
+            {
+                Directory.Delete(Application.streamingAssetsPath, true);
+                Directory.CreateDirectory(Application.streamingAssetsPath);
+            }
+            EditorUtility.ClearProgressBar();
+
+            ResBuildUtility.ClearAssetBundleConfigurations();
             AssetDatabase.Refresh();
         }
 
         static void BeforeBuild(BuildTarget targetPlatform)
         {
+            EditorUtility.DisplayProgressBar(
+                "Building AssetBundles", 
+                string.Format("Starting building..."),
+                0);
+
+            _target = targetPlatform;
+
             if (Directory.Exists(_outPath) == false)
                 Directory.CreateDirectory(_outPath);
-            PlatformUtility.Switch(targetPlatform);
+            ResBuildUtility.ClearAssetBundleConfigurations();
+        }
+
+        static void AfterBuild()
+        {
+            EditorUtility.ClearProgressBar();
         }
 
         public static void Build(BuildTarget targetPlatform)
         {
             BeforeBuild(targetPlatform);
 
-            // Build bundles first
+            // Build 
             var resPath = Application.dataPath + "/" + ResConfig.RES_ROOT;
             var files = ResBuildUtility.GetFiles(resPath);
             BuildBundles(targetPlatform, files);
 
-            // Build version file
-            var bundlesPath = _outPath;
-            files = ResBuildUtility.GetFiles(bundlesPath);
-            BuildVersionFile(targetPlatform, files);
+            AfterBuild();
         }
 
         static void BuildBundles(BuildTarget targetPlatform, string[] files)
@@ -52,21 +104,47 @@ namespace UGFramework.Res
             var buildInfos = new Dictionary<string, AssetBundleBuild>();
 
             var filters = new List<ResAbstractBuildFilter>() {
-                new ResPrefabBuildFilter(),
                 new ResLuaBuildFilter(),
+                new ResSpriteBuildFilter(),
+
+                // Assets contain dependence
+                new ResPrefabBuildFilter(),
             };
 
+            // 10
+            var basePercent = 0f;
+            var percent = 10f;
+            var index = 0f;
+            var count = filters.Count;
+
             // BeforeBuild
+            EditorUtility.DisplayProgressBar(
+                "Building AssetBundles", 
+                string.Format("Before building..."),
+                ((1) * percent + basePercent) / 100);
             foreach (var filter in filters)
             {
                 filter.BeforeBuild();
+                index++;
             }
 
+            // 30
+            basePercent = basePercent + percent;
+            percent = 20f;
+            index = 0;
+            count = files.Length * filters.Count; 
+
             // Prepare build
+            EditorUtility.DisplayProgressBar(
+                "Building AssetBundles", 
+                string.Format("Preparing..."),
+                ((1) * percent + basePercent) / 100);
             foreach (var file in files)
             {
                 foreach (var filter in filters)
                 {
+                    index++;
+
                     if (filter.Filtered(file))
                     {
                         AssetBundleBuild? buildInfoNullable = filter.PrepareBuild(file);
@@ -81,32 +159,22 @@ namespace UGFramework.Res
                     }
                 }
             }
-            AssetDatabase.Refresh();
+
+            // 50
+            basePercent = basePercent + percent;
+            percent = 20f;
+            index = 0;
+            count = files.Length * buildInfos.Count; 
 
             try
             {
                 var filteredBuildInfos = new List<AssetBundleBuild>();
 
                 // Real build
-                var overrideFilters = new HashSet<ResAbstractBuildFilter>();
                 foreach (var pair in buildInfos)
                 {
                     var filepath = pair.Key;
                     var buildInfo = pair.Value;
-
-                    var overrided = false;
-                    foreach (var filter in filters)
-                    {
-                        overrided |= filter.OverrideBuild(filepath, buildInfo);
-                        if (overrided)
-                        {
-                            overrideFilters.Add(filter);
-                            if (filter.BlockOthers)
-                                break;
-                        }
-                    }
-
-                    if (overrided == false)
                     {
                         // Add dependent buildInfos
                         ResBuildUtility.AppendDependencies(buildInfo, filteredBuildInfos);
@@ -116,20 +184,67 @@ namespace UGFramework.Res
                     }
                 }
 
-                // Build override filters first
-                foreach (var filter in overrideFilters)
+                // 60
+                basePercent = basePercent + percent;
+                percent = 10f;
+                index = 0;
+                count = filters.Count;
+
+                // Additive build
+                foreach (var filter in filters)
                 {
-                    filter.DoOverrideBuild(_outPath, filteredBuildInfos);
+                    EditorUtility.DisplayProgressBar(
+                        "Building AssetBundles", 
+                        string.Format(filter.GetType().Name + " override building..."),
+                        ((index / count) * percent + basePercent) / 100);
+                    index++;
+
+                    filter.OverrideBuild(_outPath, filteredBuildInfos);
+                }
+
+                // 80
+                basePercent = basePercent + percent;
+                percent = 20f;
+                index = 0;
+                count = filteredBuildInfos.Count;
+
+                // Set bundle name
+                EditorUtility.DisplayProgressBar(
+                    "Building AssetBundles", 
+                    string.Format("Setting bundleNames..."),
+                    ((1) * percent + basePercent) / 100);
+                for (var i = 0; i < filteredBuildInfos.Count; ++i)
+                {
+                    index++;
+
+                    var buildInfo = filteredBuildInfos[i];
+                    ResBuildUtility.ResetBundleName(ref buildInfo);
+                    filteredBuildInfos[i] = buildInfo;
                 }
 
                 // Build 
-                var options = BuildAssetBundleOptions.DeterministicAssetBundle;
                 BuildPipeline.BuildAssetBundles(
                     _outPath, 
-                    filteredBuildInfos.ToArray(),
-                    options,
+                    // filteredBuildInfos.ToArray(),
+                    _options,
                     targetPlatform
-            );
+                );
+
+                // 100
+                basePercent = basePercent + percent;
+                percent = 20f;
+                index = 1;
+                count = 1;
+
+                // Build version file
+                EditorUtility.DisplayProgressBar(
+                    "Building AssetBundles", 
+                    string.Format("Building version file..."),
+                    ((index / count) * percent + basePercent) / 100);
+
+                var bundlesPath = _outPath;
+                files = ResBuildUtility.GetFiles(bundlesPath);
+                BuildVersionFile(files);
             }
             catch (Exception e)
             {
@@ -142,25 +257,45 @@ namespace UGFramework.Res
                 {
                     filter.AfterBuild();
                 }
-                AssetDatabase.RemoveUnusedAssetBundleNames();
-                AssetDatabase.Refresh();
             }
         }
 
-        static void BuildVersionFile(BuildTarget targetPlatform, string[] files)
+        static ResVersionFile BuildVersionFile(string[] files)
         {
             var versionFile = new ResVersionFile(files.Length);
             for (var i = 0; i < files.Length; ++i)
             {
                 var file = files[i];
                 var versionInfo = new ResVersionInfo();
+                versionInfo.File = file.ReplaceFirst(_outPath + "/", "");
                 versionInfo.MD5 = MD5Utility.GetFileMD5(file);
 
                 versionFile.Files[i] = file.ReplaceFirst(_outPath + "/", "");
                 versionFile.Infos[i] = versionInfo;
             }
-            FileUtility.WriteFile(_outPath + "/" + ResConfig.VERSION_FILE, versionFile.Serialize());
+
+            var filePath = Application.dataPath + "/" + ResConfig.RES_ROOT + "/" + ResConfig.VERSION_FILE;
+            FileUtility.WriteFile(filePath, versionFile.Serialize());
             AssetDatabase.Refresh();
+
+            var buildInfo = new AssetBundleBuild();
+            buildInfo.assetBundleName = ResConfig.VERSION_FILE;
+            var assetName = "Assets/" + ResConfig.RES_ROOT + "/" + ResConfig.VERSION_FILE;
+            buildInfo.assetNames = new string[] { assetName };
+            ResBuildUtility.ResetBundleName(ref buildInfo);
+
+            var options = _options & (~BuildAssetBundleOptions.ForceRebuildAssetBundle);
+            BuildPipeline.BuildAssetBundles(
+                _outPath, 
+                // new AssetBundleBuild[] { buildInfo },
+                options,
+                _target
+            );
+
+            // Remove temp versionFile
+            File.Delete(filePath);
+
+            return versionFile;
         }
     }
 }

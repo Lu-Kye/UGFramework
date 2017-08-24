@@ -1,6 +1,6 @@
 using UnityEditor;
 
-namespace UGFramework.Editor
+namespace UGFramework.UGEditor
 {
     public static class PlatformUtility
     {

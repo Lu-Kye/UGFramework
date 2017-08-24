@@ -1,6 +1,6 @@
 using System.Collections;
 
-namespace UGFramework.Coroutine
+namespace UGFramework.UGCoroutine
 {
     public class WaitNewCoroutine : YieldInstruction
     {

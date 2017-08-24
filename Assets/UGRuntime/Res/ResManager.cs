@@ -1,8 +1,11 @@
+using System;
 using System.IO;
-using UnityEngine;
 using System.Collections;
-using UGFramework.Components;
+using System.Collections.Generic;
+using UnityEngine;
+using UnityEngine.UI;
 using UGFramework.Utility;
+using UGFramework.Extension;
 using UGFramework.Log;
 
 namespace UGFramework.Res
@@ -23,22 +26,35 @@ namespace UGFramework.Res
 
             // Count of updating files
             public int Count;
+
+            public float Percent
+            {
+                get
+                {
+                    if (Count <= 0)
+                        return 1f;
+                    return (float)(Index + 1) / Count;
+                }
+            }
         }
 
         public static ResManager Instance { get; private set; }
         ResManager() {}     
-
-        WWWSyncAgent _wwwSyncAgent;
-
-        public float Timeout = 3.0f;
 
         public bool Simulate = false;
 
         void Awake()
         {
             Instance = this;
-            _wwwSyncAgent = GameObjectUtility.GetComponent<WWWSyncAgent>(this.gameObject);
-            _wwwSyncAgent.Timeout = this.Timeout;
+        }
+
+        void OnDestroy()
+        {
+#if UNITY_EDITOR
+            // Delete hotupdate directory
+            if (Directory.Exists(ResConfig.MOBILE_HOTUPDATE_PATH))
+                Directory.Delete(ResConfig.MOBILE_HOTUPDATE_PATH, true);
+#endif
         }
 
         public void Init()
@@ -49,43 +65,112 @@ namespace UGFramework.Res
             this.InitForCompress();
         }
 
+        public void Reset()
+        {
+            this.ClearAssetBundles();
+        }
+
+        public byte[] LoadTxt(string fullpath)
+        {
+            var textAssets = this.Load<TextAsset>(fullpath);
+            var bytes = new byte[textAssets.bytes.Length];
+            textAssets.bytes.CopyTo(bytes, 0);
+            this.UnloadAsset(fullpath);
+            return bytes;
+        }
+
         /**
-        * If is editor, load lua file by fileStream.
-        * If is mobile, load lua file by assetBundle.
-        * @path : start from Assets(exclude), like "Scripts/*.cs"
-        */
+         * If is editor, load lua file by fileStream.
+         * If is mobile, load lua file by assetBundle.
+         * @path : start from Assets(exclude), like "Scripts/*.cs"
+         */
         public byte[] LoadLua(string path)
         {
-            var fullpath = ResConfig.LUA_ROOT + "/" + path; byte[] bytes = null;
+            var fullpath = ResConfig.LUA_ROOT + "/" + path; 
 
             // Editor
             if (Application.isMobilePlatform == false && this.Simulate == false)
             {
                 fullpath = Application.dataPath + "/" + ResConfig.RES_ROOT + "/" + fullpath + ResConfig.LUA_EXTENSION;
-                if (File.Exists(fullpath) == false)
-                    return this._LoadLuaFromResources(path);
                 return FileUtility.ReadFileBytes(fullpath);
             }
 
             // Mobile
-            fullpath = (fullpath + ResConfig.MOBILE_LUA_EXTENSION).ToLower();
-            this.LoadTxtAtPath(fullpath, ref bytes);
-            if (bytes == null)
-                return this._LoadLuaFromResources(path);
-            return bytes;
+            fullpath = fullpath + ResConfig.MOBILE_LUA_EXTENSION;
+            return this.LoadTxt(fullpath);
         }
-        byte[] _LoadLuaFromResources(string path)
+
+        // @path : contains file extension, like "bgBlack.png"(without "Runtime"), "IconBG/IconBG_1.png"
+        public Sprite LoadSprite(string path)
         {
-            var textAsset = Resources.Load<TextAsset>(path + ResConfig.LUA_EXTENSION);
-            if (textAsset != null)
-                return textAsset.bytes;
-            return null;
+            var fileName = Path.GetFileName(path);
+            var bundlePath = path.ReplaceLast(fileName, "");
+            if (bundlePath.EndsWith("/")) bundlePath = bundlePath.ReplaceLast("/", "");
+            var assetName = "Assets/" + ResConfig.UI_TEXTURE_RUNTIME + "/" + path;
+
+            // Assets in runtime.bundle
+            if (string.IsNullOrEmpty(bundlePath)) 
+            {
+                bundlePath = ResConfig.UI_TEXTURE_RUNTIME_BUNDLE;
+                assetName = "Assets/" + ResConfig.UI_TEXTURE_RUNTIME + "/" + fileName;
+                LogManager.Error(string.Format(
+                    "Load sprite from runtime.assetbundle is obsoleted! sprite({0})",
+                    assetName
+                ));
+                return null;
+            }
+            else
+            {
+                bundlePath = ResConfig.UI_TEXTURE_RUNTIME_BUNDLE + "/" + bundlePath;
+            }
+            path = ResConfig.UI_TEXTURE + "/" + bundlePath;
+
+            var sprite = this.Load<Sprite>(path, assetName);
+            return sprite;
+        }
+        public void UnloadSprite(string path)
+        {
+            var fileName = Path.GetFileName(path);
+            var bundlePath = path.ReplaceLast(fileName, "");
+            if (bundlePath.EndsWith("/")) bundlePath = bundlePath.ReplaceLast("/", "");
+            var assetName = "Assets/" + ResConfig.UI_TEXTURE_RUNTIME + "/" + path;
+
+            // Assets in runtime.bundle
+            if (string.IsNullOrEmpty(bundlePath)) 
+            {
+                bundlePath = ResConfig.UI_TEXTURE_RUNTIME_BUNDLE;
+                assetName = "Assets/" + ResConfig.UI_TEXTURE_RUNTIME + "/" + fileName;
+                LogManager.Error(string.Format(
+                    "Unload sprite from runtime.assetbundle is obsoleted! sprite({0})",
+                    assetName
+                ));
+                return;
+            }
+            else
+            {
+                bundlePath = ResConfig.UI_TEXTURE_RUNTIME_BUNDLE + "/" + bundlePath;
+            }
+            path = ResConfig.UI_TEXTURE + "/" + bundlePath;
+            this.UnloadAsset(path, assetName);
+        }
+
+        // @path : start from UIRoot(exclude), like "Login/Login(prefab)"
+        public GameObject LoadUI(string path)
+        {
+            path = ResConfig.UI_PREFABS_ROOT + "/" + path + ".prefab";
+            return this.Load<GameObject>(path);
+        }
+        public void UnloadUI(string path)
+        {
+            var bundlePathWithoutExtension = ResConfig.UI_PREFABS_ROOT + "/" + path + ".prefab";
+            this.UnloadAsset(bundlePathWithoutExtension);
         }
 
         // @return : scene path
         public string LoadScene(string sceneName)
         {
-            string path = ResConfig.SCENE_ROOT + "/" + sceneName;
+            var path = ResConfig.SCENE_ROOT + "/" + sceneName;
+
             // Editor
             if (Application.isMobilePlatform == false && this.Simulate == false)
             {
@@ -94,56 +179,63 @@ namespace UGFramework.Res
             }
 
             // Mobile or Simulate
-            path = path.ToLower() + ".unity";
+            path = path + ".unity";
             var loadedAssetBundle = this.LoadAssetBundle(path);
             if (loadedAssetBundle == null)
                 return null;
 
-            return loadedAssetBundle.AssetBundle.GetAllScenePaths()[0];
+            return loadedAssetBundle.ScenePaths[0];
         }
-
-        /**
-        * If is editor, load asset by assetDatabase.
-        * If is mobile, load asset by assetBundle.
-        * @path : start from ResRoot(exclude), like "Lua/*.lua"
-        */
-        public T Load<T>(string path)
-            where T : UnityEngine.Object
+        public void UnloadScene(string sceneName)
         {
             // Editor
             if (Application.isMobilePlatform == false && this.Simulate == false)
             {
-    #if UNITY_EDITOR
-                var fullpath = "Assets/" + ResConfig.RES_ROOT + "/" + path;
-                return UnityEditor.AssetDatabase.LoadAssetAtPath<T>(fullpath);
-    #else
-                return null;
-    #endif
+                return;
             }
-
-            // Mobile
-            return this.LoadFromCacheOrBundle<T>(path.ToLower());
+            // Mobile or Simulate
+            var path = ResConfig.SCENE_ROOT + "/" + sceneName;
+            path = path + ".unity";
+            this.UnloadAssetBundle(path, false);
         }
 
         /**
-        * You must know what you are going to do, and be careful of unload resource
-        */
-        public void Unload(UnityEngine.Object assetToUnload)
+         * If is editor, load asset by assetDatabase.
+         * If is mobile, load asset by assetBundle.
+         * @path : start from ResRoot(exclude), like "Lua/*.lua"
+         */
+        public T Load<T>(string path, string assetName = null)
+            where T : UnityEngine.Object
         {
-            this.StartCoroutine(_Unload(assetToUnload));
-        }
-        IEnumerator _Unload(UnityEngine.Object assetToUnload)
-        {
-            yield return new WaitForEndOfFrame();
-            Resources.UnloadAsset(assetToUnload);
+            var bundlePathWithoutExtension = path;
+            // NOTE: Load asset from bundle will increase referenceCount of this bundle!
+            var assetFromCacheOrBundle = this.LoadFromCacheOrBundle<T>(bundlePathWithoutExtension, assetName);
+            return assetFromCacheOrBundle;
         }
 
         /**
-        * Unload all unused assets, usually call this function when changing scene
-        */
+         * You must know what you are going to do, and be careful of unloading asset
+         */
+        public void UnloadAsset(string bundlePathWithoutExtension, string assetName = null)
+        {
+            this.Unload(bundlePathWithoutExtension, assetName);
+        }
+
+        /**
+         * Unload all unused assets, usually call this function when changing scene
+         */
+        Coroutine _unloadUnusedAssetCoroutine = null;
         public void UnloadUnusedAssets()
         {
-            Resources.UnloadUnusedAssets();
+            if (_unloadUnusedAssetCoroutine != null) 
+                return;
+            _unloadUnusedAssetCoroutine = this.StartCoroutine(_UnloadUnusedAssets());
+        }
+        IEnumerator _UnloadUnusedAssets()
+        {
+            yield return 1;
+            yield return Resources.UnloadUnusedAssets();
+            _unloadUnusedAssetCoroutine = null;
         }
     }
 }

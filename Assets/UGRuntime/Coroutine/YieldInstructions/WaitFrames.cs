@@ -1,4 +1,4 @@
-namespace UGFramework.Coroutine
+namespace UGFramework.UGCoroutine
 {
     public class WaitFrames : YieldInstruction
     {

@@ -1,9 +1,9 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UGFramework.Pool;
-using UGFramework.Editor.Inspector;
+using UGFramework.UGEditor.Inspector;
 
-namespace UGFramework.Coroutine
+namespace UGFramework.UGCoroutine
 {
     /**
      * --- DOC BEGIN ---

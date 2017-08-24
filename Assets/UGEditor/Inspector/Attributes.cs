@@ -1,6 +1,6 @@
 using System;
 
-namespace UGFramework.Editor.Inspector
+namespace UGFramework.UGEditor.Inspector
 {
     [AttributeUsageAttribute(
         AttributeTargets.Property | AttributeTargets.Field, 
@@ -34,6 +34,32 @@ namespace UGFramework.Editor.Inspector
         public InspectorTooltip(string tooltip)
         {
             this.Tooltip = tooltip;
+        }
+    }
+
+    [AttributeUsageAttribute(
+        AttributeTargets.Property | AttributeTargets.Field, 
+        Inherited = true, 
+        AllowMultiple = false)]
+    public class OverrideDrawer : Attribute
+    {
+        public string Method { get; private set; }
+        public OverrideDrawer(string method)
+        {
+            this.Method = method;
+        }
+    }
+
+    [AttributeUsageAttribute(
+        AttributeTargets.Property | AttributeTargets.Field, 
+        Inherited = true, 
+        AllowMultiple = false)]
+    public class Foldouter : Attribute
+    {
+        public bool Foldout { get; private set; }
+        public Foldouter(bool foldout = true)
+        {
+            this.Foldout = foldout;
         }
     }
 }

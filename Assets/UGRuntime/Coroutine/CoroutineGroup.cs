@@ -1,7 +1,7 @@
 using System;
-using UGFramework.Editor.Inspector;
+using UGFramework.UGEditor.Inspector;
 
-namespace UGFramework.Coroutine
+namespace UGFramework.UGCoroutine
 {
     /**
      * --- DOC BEGIN ---

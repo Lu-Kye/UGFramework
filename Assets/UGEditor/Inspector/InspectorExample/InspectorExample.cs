@@ -4,7 +4,7 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace UGFramework.Editor.Inspector
+namespace UGFramework.UGEditor.Inspector
 {
     [ExecuteInEditMode]
     public class InspectorExample : MonoBehaviour

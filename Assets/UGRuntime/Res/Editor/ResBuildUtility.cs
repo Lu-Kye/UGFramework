@@ -3,7 +3,7 @@ using System.IO;
 using System.Linq;
 using UnityEditor;
 using UGFramework.Log;
-using UGFramework.Extension.String;
+using UGFramework.Extension;
 
 namespace UGFramework.Res
 {
@@ -26,15 +26,30 @@ namespace UGFramework.Res
             return assetFiles.ToArray();
         }
 
-        public static void SetBundleName(AssetBundleBuild buildInfo)
+        public static void ResetBundleName(ref AssetBundleBuild buildInfo)
         {
-            var assetImporter = AssetImporter.GetAtPath(buildInfo.assetNames[0]);
-            assetImporter.assetBundleName = buildInfo.assetBundleName;
+            var assetBundleNameWithoutExtension = buildInfo.assetBundleName.ReplaceLast(ResConfig.BUNDLE_EXTENSION, "");
+            assetBundleNameWithoutExtension = ResConfig.ConvertToBundleName(assetBundleNameWithoutExtension);
+            var assetBundleName = assetBundleNameWithoutExtension + ResConfig.BUNDLE_EXTENSION;
+            buildInfo.assetBundleName = assetBundleName;
+
+            foreach (var assetName in buildInfo.assetNames)
+            {
+                var assetImporter = AssetImporter.GetAtPath(assetName);
+                if (assetImporter == null)
+                {
+                    LogManager.Error("ResetBundleName error, asset not found: " + assetName);
+                    continue;
+                }
+                if (assetImporter.assetBundleName != assetBundleName)
+                {
+                    assetImporter.assetBundleName = assetBundleName;
+                }
+            }
         }
 
         public static void AppendDependencies(AssetBundleBuild buildInfo, List<AssetBundleBuild> buildInfos)
         {
-            var dependencies = AssetDatabase.GetDependencies(buildInfo.assetNames[0], true);
             for (int i = 0; i < buildInfo.assetNames.Length; ++i)
             {
                 _AppendDependencies(buildInfo, buildInfo.assetNames[i], buildInfos);
@@ -45,26 +60,56 @@ namespace UGFramework.Res
             var dependencies = AssetDatabase.GetDependencies(name, true);
             foreach (var dependence in dependencies)
             {
-                if (dependence.StartsWith("Assets/" + ResConfig.RES_ROOT))
+                // Exclude assets not in Assets
+                if (dependence.StartsWith("Assets") == false)
+                {
+                    LogManager.Warning(string.Format(
+                        "asset({0}) depends on asset({1}) not in Assets!",
+                        name, 
+                        dependence
+                    ));
                     continue;
+                }
 
-                // Exclude code files
+                // Exclude scripts
                 if (dependence.EndsWith(".cs") || dependence.EndsWith(".js"))
+                {
                     continue;
+                }
+
+                if (dependence.StartsWith("Assets/" + ResConfig.RES_ROOT))
+                {
+                    if (name != dependence && 
+                        dependence.EndsWith(".shader") == false)
+                    {
+                        LogManager.Warning(string.Format(
+                            "asset({0}) depends on asset({1}) in Assets/Res, which should be prevented!",
+                            name, 
+                            dependence
+                        ));
+                    }
+                    continue;
+                }
+
+                // Set atlas name 
+                if (dependence.StartsWith("Assets/" + ResConfig.UI_TEXTURE) &&
+                    dependence.StartsWith("Assets/" + ResConfig.UI_TEXTURE_RUNTIME) == false)
+                {
+                    var textureImporter = AssetImporter.GetAtPath(dependence) as TextureImporter;
+                    ResTextureAutoConfigurer.ConfigureUITexture(textureImporter);
+                }
 
                 var assetName = dependence;
                 var assetBundleName = dependence;
-                if (dependence.StartsWith("Assets/" + ResConfig.UI_TEXTURE))
+                var dependenceRoot = dependence.ReplaceFirst("Assets", ResConfig.DEPENDENCIES_ROOT);
+                if (ResConfig.IsFolderAsBundleName(dependence))
                 {
-                    if (dependence.StartsWith("Assets/" + ResConfig.UI_TEXTURE_RUNTIME))
-                        continue;
-
                     var fileName = Path.GetFileName(dependence);
-                    assetBundleName = dependence.Replace("Assets", ResConfig.DEPENDENCIES_ROOT).ReplaceLast("/" + fileName, "") + ResConfig.BUNDLE_EXTENSION;
+                    assetBundleName = dependenceRoot.ReplaceLast("/" + fileName, "") + ResConfig.BUNDLE_EXTENSION;
                 }
                 else
                 {
-                    assetBundleName = dependence.ReplaceFirst("Assets", ResConfig.DEPENDENCIES_ROOT) + ResConfig.BUNDLE_EXTENSION;
+                    assetBundleName = dependenceRoot + ResConfig.BUNDLE_EXTENSION;
                 }
 
                 var index = TryGetBuildInfo(buildInfos, assetBundleName);
@@ -74,8 +119,7 @@ namespace UGFramework.Res
                     dependenceBuildInfo.assetNames = new string[] { assetName };
                     dependenceBuildInfo.assetBundleName = assetBundleName;
                     buildInfos.Add(dependenceBuildInfo);
-
-                    LogManager.Log("dependence " + assetBundleName);
+                    _AppendDependencies(dependenceBuildInfo, assetName, buildInfos);
                 }
                 else
                 {
@@ -83,12 +127,11 @@ namespace UGFramework.Res
                     var assetNames = dependenceBuildInfo.assetNames.ToList();
                     if (assetNames.Contains(assetName))
                         continue;
-                    
+
                     assetNames.Add(assetName);
                     dependenceBuildInfo.assetNames = assetNames.ToArray();
                     buildInfos[index] = dependenceBuildInfo;
-
-                    LogManager.Log("dependence " + assetBundleName);
+                    _AppendDependencies(dependenceBuildInfo, assetName, buildInfos);
                 }
             }
         }
@@ -103,6 +146,20 @@ namespace UGFramework.Res
                 index++;
             }
             return -1;
+        }
+
+        public static void ClearAssetBundleConfigurations()
+        {
+            EditorUtility.DisplayProgressBar(
+                "Clear AssetBundle Configurations", 
+                string.Format("Clearing bundleNames..."),
+                (float)1 / 1);
+            var names = AssetDatabase.GetAllAssetBundleNames();
+            for (int i = 0; i < names.Length; ++i)
+            {
+                AssetDatabase.RemoveAssetBundleName(names[i], true);
+            }
+            EditorUtility.ClearProgressBar();
         }
     }
 }

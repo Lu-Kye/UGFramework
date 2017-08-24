@@ -1,7 +1,7 @@
 using UnityEditor;
-using UGFramework.Editor.Inspector;
+using UGFramework.UGEditor.Inspector;
 
-namespace UGFramework.Coroutine
+namespace UGFramework.UGCoroutine
 {
     [CustomEditor(typeof(CoroutineManager))]
     public class CoroutineManagerEditor : InspectorEditor<CoroutineManager>

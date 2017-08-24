@@ -1,35 +1,214 @@
+using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.IO;
-using UGFramework.Extension.String;
-using UGFramework.Log;
+using System.Linq;
 using UnityEngine;
+using UGFramework.Log;
 
 namespace UGFramework.Res
 {
     public partial class ResManager
     {
-        public class LoadedAssetBundle
-        {
-            public AssetBundle AssetBundle { get; private set; }
-            public int ReferencedCount { get; set; }
-            public bool IsDependence { get; set; }
-            
-            public LoadedAssetBundle(AssetBundle assetBundle)
+    	public class LoadedAssetBundle
+    	{
+            string _bundleName;
+            string _mainAssetName;
+    
+    		AssetBundle _bundle; 
+    
+    		public int ReferencedCount { get; set; }
+    
+            public string[] ScenePaths 
             {
-                this.AssetBundle = assetBundle;
+                get
+                {
+                    return _bundle.GetAllScenePaths();
+                }
             }
-        }
-
+    
+    		public LoadedAssetBundle(string path, string bundleName)
+    		{
+                _bundleName = bundleName.ToLower();
+                _mainAssetName = path == ResConfig.MAINIFEST ? "AssetBundleManifest" : "Assets/" + ResConfig.RES_ROOT + "/" + path;
+    
+                // First try hot update path
+                var fullpath = ResConfig.MOBILE_HOTUPDATE_PATH + "/" + _bundleName;
+                if (File.Exists(fullpath) == false)
+                {
+                    // Second try buildin path
+                    fullpath = ResConfig.BUILDIN_PATH + "/" + _bundleName;
+                }
+    
+                // Editor
+                if (Application.isMobilePlatform == false && ResManager.Instance.Simulate == false)
+                {
+                    return;
+                }
+    
+    #if UNITY_EDITOR
+                var time = Time.realtimeSinceStartup;
+    #endif
+    
+                // Load assetBundle
+                var assetBundle = AssetBundle.LoadFromFile(fullpath);
+                _bundle = assetBundle;
+                if (_bundle == null)
+                {
+                    LogManager.Error(string.Format(
+                        "ResManager.LoadedAssetBundle:Ctor failure, bundle({0}) not found!", 
+                        fullpath
+                    ));
+                }
+    
+    #if UNITY_EDITOR
+                if (ResManager.Instance.ShowElapsedTime)
+                {
+                    var elapsedTime = (Time.realtimeSinceStartup - time) * 1000;
+                    if (elapsedTime > 50)
+                    {
+                        LogManager.Error(string.Format(
+                            "Load assetBundle({0}) elapsedTime:({1:###.#}ms)",
+                            Path.GetFileName(fullpath),
+                            elapsedTime
+                        ), this);
+                    }
+                }
+    #endif
+            }
+    
+            public T LoadAsset<T>(string assetName)
+                where T : UnityEngine.Object
+            {
+                UnityEngine.Object asset = null;
+    
+                // Editor
+    #if UNITY_EDITOR
+                if (Application.isMobilePlatform == false && ResManager.Instance.Simulate == false)
+                {
+                    asset = UnityEditor.AssetDatabase.LoadAssetAtPath<T>(assetName);
+                    if (asset == null)
+                    {
+                        LogManager.Error(string.Format(
+                            "LoadAsset<T> load from AssetDatabase error! asset({0})", 
+                            assetName
+                        ), this);
+                    }
+                    return asset as T;
+                }
+    #endif
+    
+                // Mobile
+                if (_bundle == null) 
+                {
+                    LogManager.Error(string.Format(
+                        "LoadAsset<T> error, bundle is nil! asset({0})", 
+                        assetName
+                    ), this);
+                    return null;
+                }
+    
+                // Load by assetBundle
+                asset = _bundle.LoadAsset<T>(assetName.ToLower());
+                if (asset == null) 
+                {
+                    LogManager.Error(string.Format(
+                        "LoadAsset<T> load asset frome bundle error! asset({0})", 
+                        assetName
+                    ), this);
+                    return null;
+                }
+    
+    #if UNITY_EDITOR
+                // Load in editor by assetDatabase 
+                // and override asset in assetBundle(only for prefab(because of loading animated prefab error))
+                var assetBundleName = _bundleName;
+                while (asset is GameObject)
+                {
+                    var go = asset as GameObject;
+                    var animators = go.GetComponentsInChildren<Animator>();
+                    if (animators == null || animators.Length <= 0)
+                        break;
+    
+                    var assetPaths = UnityEditor.AssetDatabase.GetAssetPathsFromAssetBundle(assetBundleName);
+                    if (assetPaths.Length == 0)
+                    {
+                        LogManager.Error(string.Format(
+                            "LoadAssetBundle ctor error, assetBundle not found in Editor! assetBundleName({0}) assetName({1})",
+                            assetBundleName,
+                            assetName
+                        ));
+                    }
+                    else
+                    {
+                        var index = -1;
+                        for (int i = 0; i < assetPaths.Length; ++i)
+                        {
+                            var assetPath = assetPaths[i];
+                            var assetName1 = Path.GetFileName(assetName).ToLower();
+                            var assetName2 = Path.GetFileName(assetPath).ToLower();
+                            if (assetName1 == assetName2)
+                            {
+                                index = i;
+                                break;
+                            }
+                        }
+                        if (index == -1)
+                        {
+                            LogManager.Error(string.Format(
+                                "LoadAssetBundle ctor error, assetBundle index not found in Editor! assetBundleName({0}) assetName({1})",
+                                assetBundleName,
+                                assetName
+                            ));
+                        }
+                        asset = UnityEditor.AssetDatabase.LoadMainAssetAtPath(assetPaths[index]);
+                    }
+                    break;
+                }
+    #endif
+    
+                return asset as T;
+            }
+    
+            public T LoadMainAsset<T>()
+                where T : UnityEngine.Object
+            {
+                return this.LoadAsset<T>(_mainAssetName);    
+            }
+    
+            public void Unload()
+            {
+                if (_bundle != null)
+                {
+                    _bundle.Unload(false);
+                    UnityEngine.Object.Destroy(_bundle);
+                    _bundle = null;
+                }
+            }
+    	}
+    
         Dictionary<string, LoadedAssetBundle> _assetBundles = new Dictionary<string, LoadedAssetBundle>();
+        Dictionary<string, string[]> _dependenceInfos = new Dictionary<string, string[]>();
+    
         AssetBundleManifest _manifest;
-
+        bool _manifestLoading = false;
+    
         void InitForAssetBundle()
+        {
+        }
+    
+        void EnsureManifest()
         {
             if (Application.isMobilePlatform == false && this.Simulate == false)
                 return;
-
-            _assetBundles.Clear();
-
+            
+            if (_manifest != null || _manifestLoading)
+                return;
+            _manifestLoading = true;
+    
+            // Clear at first    
+            this.ClearAssetBundles();
+    
             // Init manifest
             var manifestAssetBundle = this.LoadAssetBundle(ResConfig.MAINIFEST);
             if (manifestAssetBundle == null)
@@ -37,134 +216,122 @@ namespace UGFramework.Res
                 LogManager.Error("ResManager::InitForAssetBundle error, manifest bundle is null!");
                 return;
             }
-            _manifest = manifestAssetBundle.AssetBundle.LoadAsset<AssetBundleManifest>("AssetBundleManifest");
+            _manifest = manifestAssetBundle.LoadAsset<AssetBundleManifest>("AssetBundleManifest");
+            _manifestLoading = false;
             if (_manifest == null)
             {
                 LogManager.Error("ResManager::InitForAssetBundle error, manifest is null!");
             }
         }
-
-        void UnloadAssetBundle(string path, bool unloadAllLoadedObject = false)
+    
+        void ClearAssetBundles()
         {
-            LoadedAssetBundle loadedAssetBundle = null;
-            if (_assetBundles.TryGetValue(path, out loadedAssetBundle) == false)
-                return;
-            
-            var isManifest = path == ResConfig.MAINIFEST;
-            var bundleName = isManifest ? path : path + ResConfig.BUNDLE_EXTENSION;
-
-            // Not support unload manifest bundle
-            if (isManifest)
-                return;
-            
-            // Unload bundle assets, and remove from cache
-            if (unloadAllLoadedObject)
+            var paths = _assetBundles.Keys.ToArray();
+            for (int i = 0; i < paths.Length; ++i)
             {
-                loadedAssetBundle.AssetBundle.Unload(true);
-                _assetBundles.Remove(path);
-            }
-            else
-            {
-                loadedAssetBundle.AssetBundle.Unload(false);
-            }
-
-            // Try unload depenceBundle
-            var dependencies = _manifest.GetAllDependencies(bundleName);
-            for (var i = 0; i < dependencies.Length; ++i)
-            {
-                var dependence = dependencies[i].Replace(ResConfig.BUNDLE_EXTENSION, "");
-                LoadedAssetBundle dependenceAssetBundle = null;
-                if (_assetBundles.TryGetValue(dependence, out dependenceAssetBundle) == false)
+                var path = paths[i];
+                if (path == ResConfig.MAINIFEST)
                     continue;
-                if (dependenceAssetBundle.IsDependence == false)
-                    continue;
-                
-                if (unloadAllLoadedObject)
-                {
-                    // Cut down reference count
-                    dependenceAssetBundle.ReferencedCount--;
-
-                    // Unload
-                    if (dependenceAssetBundle.ReferencedCount <= 0)
-                    {
-                        dependenceAssetBundle.AssetBundle.Unload(true);
-                        _assetBundles.Remove(dependence);
-                    }
-                }
-                else
-                {
-                    dependenceAssetBundle.AssetBundle.Unload(false);
-                }
+                this.UnloadAssetBundle(path, true);
             }
+            this.UnloadAssetBundle(ResConfig.MAINIFEST, true);
+            _manifest = null;
+            _assetBundles.Clear();
         }
-
-        LoadedAssetBundle LoadAssetBundle(string path)        
+    
+        LoadedAssetBundle TryGetLoadedAssetBundle(string path)
         {
             LoadedAssetBundle loadedAssetBundle = null;
-            if (_assetBundles.TryGetValue(path, out loadedAssetBundle))
+    		if (_assetBundles.TryGetValue(path, out loadedAssetBundle))
             {
-                loadedAssetBundle.IsDependence = false;
                 return loadedAssetBundle;
             }
-
-            // Make sure to remove unloaded bundle from cache
-            _assetBundles.Remove(path);
-
-            var isManifest = path == ResConfig.MAINIFEST;
-            var bundleName = isManifest ? path : path + ResConfig.BUNDLE_EXTENSION;
-
-            var isHotUpdate = false;
-            // First try hot update path
-            var fullpath = ResConfig.MOBILE_HOTUPDATE_PATH + "/" + bundleName;
-            if (File.Exists(fullpath))
+            return null;
+        }
+    
+        bool UnloadAssetBundle(string path, bool force = false)
+        {
+            var cachePath = path.ToLower();
+            var loadedAssetBundle = this.TryGetLoadedAssetBundle(cachePath);
+    		if (loadedAssetBundle == null)
             {
-                isHotUpdate = true;
+                return false;
             }
-            else
-            {
-                // Second try buildin path
-                LogManager.Log(string.Format("ResManager::LoadAssetFromBundle failure in MOBILE_HOTUPDATE_PATH({0})", fullpath));
-                isHotUpdate = false;
-                fullpath = ResConfig.BUILDIN_PATH + "/" + bundleName;
-            }
-
-            var assetBundle = AssetBundle.LoadFromFile(fullpath);
-            if (assetBundle == null)
-            {
-                LogManager.Log(string.Format("ResManager::LoadAssetFromBundle failure in BUILDIN_PATH({0})", fullpath));
-                return null;
-            }
-
-            loadedAssetBundle = new LoadedAssetBundle(assetBundle);
-            loadedAssetBundle.IsDependence = false;
-            // Cache assetBundle
-            _assetBundles.Add(path, loadedAssetBundle);
-
-            if (isHotUpdate == false)
-                LogManager.Log(string.Format("ResManager::LoadAssetFromBundle successfully in BUILDIN_PATH({0})", fullpath));
-            else
-                LogManager.Log(string.Format("ResManager::LoadAssetFromBundle successfully in MOBILE_HOTUPDATE_PATH({0})", fullpath));
             
-            // Load dependencies
-            if (isManifest == false && _manifest != null)
+            var isManifest = path == ResConfig.MAINIFEST;
+            var bundleName = isManifest ? path : ResConfig.ConvertToBundleName(path) + ResConfig.BUNDLE_EXTENSION;
+    
+            // Try unload bundle assets, and remove from cache
+            if (force)
+                loadedAssetBundle.ReferencedCount = 0;
+            else
+                loadedAssetBundle.ReferencedCount--;
+    
+            // Check referencedCount
+            var unload = false;
+            if (loadedAssetBundle.ReferencedCount <= 0)
             {
-                var dependencies = _manifest.GetAllDependencies(bundleName);
+                unload = true;
+                loadedAssetBundle.Unload();
+                _assetBundles.Remove(cachePath);
+                this.DebugDeallocBundle(cachePath);
+                if (isManifest)
+                    _manifest = null;
+            }
+    
+            // Try unload depenceBundle
+            if (unload == true && _dependenceInfos.ContainsKey(bundleName))
+            {
+                var dependencies = _dependenceInfos[bundleName];
                 for (var i = 0; i < dependencies.Length; ++i)
                 {
-                    var dependence = dependencies[i].Replace(ResConfig.BUNDLE_EXTENSION, "");
-                    var dependenceBundle = this.LoadAssetBundle(dependence);
-                    dependenceBundle.IsDependence = true;
+                    var dependencePath = ResConfig.ReverseFromBundleName(dependencies[i]);
+                    this.UnloadAssetBundle(dependencePath, force);
+                }
+                _dependenceInfos.Remove(bundleName);
+            }
+    
+            return true;
+        }
+    
+        LoadedAssetBundle LoadAssetBundle(string path, bool isDependence = false)        
+        {
+            this.EnsureManifest();
+            var cachePath = path.ToLower();
+            var loadedAssetBundle = this.TryGetLoadedAssetBundle(cachePath);
+    		if (loadedAssetBundle != null)
+            {
+                loadedAssetBundle.ReferencedCount++;
+                return loadedAssetBundle;
+            }
+    
+            var isManifest = path == ResConfig.MAINIFEST;
+            var bundleName = isManifest ? path : ResConfig.ConvertToBundleName(path) + ResConfig.BUNDLE_EXTENSION;
+    
+            // Load dependencies
+            if (isDependence == false)
+            {
+                var dependencies = this.GetDependencies(bundleName, path);
+                for (var i = 0; i < dependencies.Length; ++i)
+                {
+                    var dependencePath = ResConfig.ReverseFromBundleName(dependencies[i]);
+                    var dependenceBundle = this.LoadAssetBundle(dependencePath, true);
                     if (dependenceBundle == null)
                     {
-                        LogManager.Error(string.Format("ResManager::LoadAssetFromBundle error, dependence({0}) is null!", dependence));
-                    }
-                    else
-                    {
-                        LogManager.Log(string.Format("ResManager::LoadAssetFromBundle load dependence successfully dependence({0})!", dependence));
-                        dependenceBundle.ReferencedCount++;
+                        LogManager.Error(string.Format(
+                            "ResManager::LoadAssetFromBundle error, dependence({0}) is null!", 
+                            dependencePath
+                        ));
                     }
                 }
             }
+    
+            // Load & cache assetBundle
+            loadedAssetBundle = new LoadedAssetBundle(path, bundleName);
+            loadedAssetBundle.ReferencedCount = 1;
+            _assetBundles.Add(cachePath, loadedAssetBundle);
+            this.DebugAllocBundle(cachePath);
+            
             return loadedAssetBundle;
         }
     }

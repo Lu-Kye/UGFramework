@@ -1,6 +1,6 @@
 using System;
 using UnityEngine;
-using UGFramework.Editor.Inspector;
+using UGFramework.UGEditor.Inspector;
 using UnityEngine.EventSystems;
 
 namespace UGFramework.Touch

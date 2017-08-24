@@ -1,28 +1,28 @@
 using UnityEditor;
 
-namespace UGFramework.Editor.Inspector
+namespace UGFramework.UGEditor.Inspector
 {
     public static class InspectorMenu
     {
-        [MenuItem(TopbarConfig.INSPECTOR + "/Expand")]
+        [MenuItem(MenuConfig.INSPECTOR + "/Expand")]
         public static void Expand()    
         {
             InspectorUtility.Foldout(true, null, InspectorUtility.SelectedPath);
         }
 
-        [MenuItem(TopbarConfig.INSPECTOR + "/ExpandAll")]
+        [MenuItem(MenuConfig.INSPECTOR + "/ExpandAll")]
         public static void ExpandAll()    
         {
             InspectorUtility.Foldout(true, null, InspectorUtility.SelectedPath, true);
         }
 
-        [MenuItem(TopbarConfig.INSPECTOR + "/Collapse")]
+        [MenuItem(MenuConfig.INSPECTOR + "/Collapse")]
         public static void Collapse()    
         {
             InspectorUtility.Foldout(false, null, InspectorUtility.SelectedPath);
         }
 
-        [MenuItem(TopbarConfig.INSPECTOR + "/CollapseAll")]
+        [MenuItem(MenuConfig.INSPECTOR + "/CollapseAll")]
         public static void CollapseAll()    
         {
             InspectorUtility.Foldout(false, null, InspectorUtility.SelectedPath, true);

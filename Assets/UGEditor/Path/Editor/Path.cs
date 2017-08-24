@@ -1,7 +1,7 @@
 using UnityEngine;
 using UnityEditor;
 
-namespace UGFramework.Editor
+namespace UGFramework.UGEditor
 {
     public class Path 
     {

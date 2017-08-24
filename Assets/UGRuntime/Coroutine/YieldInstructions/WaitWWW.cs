@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace UGFramework.Coroutine
+namespace UGFramework.UGCoroutine
 {
     /**
      * --- DOC BEGIN ---

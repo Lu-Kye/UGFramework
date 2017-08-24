@@ -1,9 +1,9 @@
 using System;
 using System.Collections;
 using UGFramework.Pool;
-using UGFramework.Editor.Inspector;
+using UGFramework.UGEditor.Inspector;
 
-namespace UGFramework.Coroutine
+namespace UGFramework.UGCoroutine
 {
     public enum Status
     {

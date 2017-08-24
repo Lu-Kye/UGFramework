@@ -1,7 +1,7 @@
 ﻿using System.Collections;
 using UnityEngine;
 
-namespace UGFramework.Coroutine
+namespace UGFramework.UGCoroutine
 {
 	public class CoroutineExample : MonoBehaviour 
 	{

@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace UGFramework.Editor
+namespace UGFramework.UGEditor
 {
     public class PathSeed : ScriptableObject
     {

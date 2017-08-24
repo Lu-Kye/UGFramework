@@ -1,7 +1,7 @@
 using UnityEngine;
 using UnityEditor;
 
-namespace UGFramework.Editor.Inspector
+namespace UGFramework.UGEditor.Inspector
 {
     public class InspectorEditor<T> : UnityEditor.Editor
         where T : MonoBehaviour
