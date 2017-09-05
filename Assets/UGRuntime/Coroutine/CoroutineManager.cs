@@ -42,7 +42,7 @@ namespace UGFramework.UGCoroutine
             }
 
             // var coroutine = new Coroutine(group, routine);
-            var coroutine = ObjectPool.Instance.Alloc<Coroutine>(group, routine);
+            var coroutine = CoroutinePool.Instance.Alloc<Coroutine>(new object[] { group, routine });
             coroutines.AddLast(coroutine);
 
             return coroutine;
@@ -86,6 +86,7 @@ namespace UGFramework.UGCoroutine
 
                 } while ((coroutineNode = coroutineNode.Next) != null);
             }
+            coroutineGroupsIter.Dispose();
 
             this._currentFrameCount = UnityEngine.Time.frameCount;
         }
@@ -103,11 +104,10 @@ namespace UGFramework.UGCoroutine
                 var coroutineGroup = this._coroutineGroups[removingCoroutine.Group];
 
                 coroutineGroup.Remove(removingCoroutine);
-
-                // Deallocate the coroutine Instance
-                ObjectPool.Instance.Dealloc(removingCoroutine);
+                CoroutinePool.Instance.Dealloc(removingCoroutine);
             }
+            removingCoroutinesIter.Dispose();
+            this._removingCoroutines.Clear();
         }
-
     }
 }

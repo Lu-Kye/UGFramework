@@ -32,16 +32,16 @@ namespace UGFramework.UGCoroutine
 
         bool _noRoutine = false;
 
-        public Coroutine(CoroutineGroup group, IEnumerator routine)
+        public Coroutine()
         {
-            this.Group = group;
-            this.Routine = routine;    
             this.CreatedFrameCount = UnityEngine.Time.frameCount;
             this.Status = Status.RUNNING;
         }
 
-        public void Alloc() 
+        public void Alloc(params object[] args) 
         { 
+            this.Group = args[0] as CoroutineGroup;
+            this.Routine = args[1] as IEnumerator;    
             this.Next(); 
             this.UpdateStatus(); 
         }

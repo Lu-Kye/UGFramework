@@ -26,8 +26,7 @@ namespace UGFramework.UGCoroutine
         {
             if (_coroutine == null)
             {
-                _coroutine = new Coroutine(this.Coroutine.Group, _routine);
-                _coroutine.Alloc();
+                _coroutine = CoroutinePool.Instance.Alloc<Coroutine>(new object[] { this.Coroutine.Group, _routine });
             }
             else if (_coroutine.IsRunning)
             {

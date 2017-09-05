@@ -51,7 +51,7 @@ namespace UGFramework
 		{
 		}
 
-		public virtual void Dispose()
+		public virtual void Init()
 		{
 		}
 	}

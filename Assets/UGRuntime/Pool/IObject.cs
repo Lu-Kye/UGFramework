@@ -2,7 +2,7 @@ namespace UGFramework.Pool
 {
     public interface IObject 
     {
-        void Alloc();    
+        void Alloc(params object[] args);    
         void Dealloc();    
     }
 }
