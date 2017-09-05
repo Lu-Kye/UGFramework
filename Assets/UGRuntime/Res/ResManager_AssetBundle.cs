@@ -76,10 +76,15 @@ namespace UGFramework.Res
                 }
     #endif
             }
+
+            Dictionary<string, UnityEngine.Object> _assets = new Dictionary<string, UnityEngine.Object>();
     
             public T LoadAsset<T>(string assetName)
                 where T : UnityEngine.Object
             {
+                if (_assets.ContainsKey(assetName))
+                    return _assets[assetName] as T;
+
                 UnityEngine.Object asset = null;
     
                 // Editor
@@ -93,7 +98,8 @@ namespace UGFramework.Res
                             "LoadAsset<T> load from AssetDatabase error! asset({0})", 
                             assetName
                         ), this);
-                    }
+                    }                
+                    _assets[assetName] = asset;
                     return asset as T;
                 }
     #endif
@@ -166,7 +172,8 @@ namespace UGFramework.Res
                     break;
                 }
     #endif
-    
+
+                _assets[assetName] = asset;
                 return asset as T;
             }
     
