@@ -55,6 +55,27 @@ namespace UGFramework.Utility
                 }
             }
         }
+
+        public static void MoveFile(string source, string target)
+        {
+            var fileInfo = new FileInfo(target);
+            if (fileInfo.Exists == false)
+                fileInfo.Directory.Create();
+            if (File.Exists(target)) File.Delete(target);
+            File.Move(source, target);
+        }
+
+        public static void CopyFile(string source, string target)
+        {
+            if (File.Exists(target)) File.Delete(target);
+            File.Copy(source, target);
+        }
+
+        public static void DeleteFile(string fullpath)
+        {
+            if (File.Exists(fullpath) == false) return;
+            File.Delete(fullpath);
+        }
     
         public static List<string> ReadCSV(string filePath)
         {

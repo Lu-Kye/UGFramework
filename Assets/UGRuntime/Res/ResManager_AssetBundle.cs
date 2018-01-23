@@ -113,9 +113,20 @@ namespace UGFramework.Res
                     ), this);
                     return null;
                 }
+
+                // Check 
+                var assetNameLower = assetName.ToLower();
+                if (_bundle.Contains(assetNameLower) == false)
+                {
+                    LogManager.Error(string.Format(
+                        "LoadAsset<T> error, asset does not exist! asset({0})", 
+                        assetNameLower
+                    ), this);
+                    return null;
+                }
     
                 // Load by assetBundle
-                asset = _bundle.LoadAsset<T>(assetName.ToLower());
+                asset = _bundle.LoadAsset<T>(assetNameLower);
                 if (asset == null) 
                 {
                     LogManager.Error(string.Format(

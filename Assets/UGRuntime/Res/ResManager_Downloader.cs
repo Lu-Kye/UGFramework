@@ -18,7 +18,7 @@ namespace UGFramework.Res
         LinkedList<Coroutine> _wwwCoroutines = new LinkedList<Coroutine>();
         Dictionary<Coroutine, WWW> _wwws = new Dictionary<Coroutine, WWW>();
     
-        void StopDownload()
+        public void StopDownload()
         {
             var coroutines = _wwwCoroutines.ToArray();
             for (int i = 0; i < coroutines.Length; ++i)

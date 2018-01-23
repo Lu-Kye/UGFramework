@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.IO;
 using UnityEngine;
 using UGFramework.Utility;
+using UGFramework.Log;
 
 namespace UGFramework.Res
 {
@@ -33,11 +34,13 @@ namespace UGFramework.Res
             this.NotifyHotUpdate(processInfo);
         }
 
+        public delegate bool ConfirmCallbackDef(int fileCount, ulong fileSizeSum);
+        ConfirmCallbackDef _confirmCallback;
         Coroutine _hotupdatingCoroutine = null;
         /**
          * Call HotUpdate when game starting 
          */
-        public void TryHotUpdate()
+        public void TryHotUpdate(ConfirmCallbackDef confirmCallback)
         {
             if (this.EnableHotUpdate == false)
             {
@@ -60,6 +63,7 @@ namespace UGFramework.Res
     #endif
 
             // Start hotupdating
+            _confirmCallback = confirmCallback;
             _hotupdatingCoroutine = this.StartCoroutine(this.HotUpdating());
         }
 
@@ -111,7 +115,7 @@ namespace UGFramework.Res
             {
                 yield break;    
             }
-            var txtAsset = this.Load<TextAsset>(fileFolder + "/" + ResConfig.VERSION_FILE);
+            var txtAsset = this.Load<TextAsset>(fileFolder + "/" + ResConfig.VERSION_FILE, ResConfig.VERSION_FILE);
             if (txtAsset == null)
             {
                 var processInfo = new ProcessInfo();
@@ -135,13 +139,24 @@ namespace UGFramework.Res
                 yield break;
             }
             assets.Clear();
+            ulong size = 0;
             for (int i = 0; i < diffInfos.Count; ++i)
             {
                 var asset = diffInfos[i].File;
                 assets.Add(asset);
+                size += diffInfos[i].Size;
             }
             var count = assets.Count;
             var downloadedCount = 0;
+
+            // Whether continue download and update assets?
+            while (_confirmCallback != null && _confirmCallback(count, size) == false)
+            {
+                yield return 1;
+            }
+            _confirmCallback = null;
+
+            // Start downloading and saving assetBundles to local storage system.
             yield return this.StartCoroutine(this.DownloadAssetsAsyncAndSave(
                 ResConfig.SERVER_URL + "/",
                 assets, 
@@ -160,7 +175,14 @@ namespace UGFramework.Res
         [ContextMenu("TestHotUpdate")]
         void TestHotUpdate()
         {
-            this.TryHotUpdate();
+            this.TryHotUpdate((count, size)=> {
+                LogManager.Error(string.Format(
+                    "Download starting, fileCount({0}) size({1:0.00})", 
+                    count, 
+                    size/(1024*1024)
+                ));
+                return true;
+            });
         }
     }
 }

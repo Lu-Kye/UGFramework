@@ -269,6 +269,7 @@ namespace UGFramework.Res
                 var versionInfo = new ResVersionInfo();
                 versionInfo.File = file.ReplaceFirst(_outPath + "/", "");
                 versionInfo.MD5 = MD5Utility.GetFileMD5(file);
+                versionInfo.Size = (ulong)FileUtility.ReadFileBytes(file).Length;
 
                 versionFile.Files[i] = file.ReplaceFirst(_outPath + "/", "");
                 versionFile.Infos[i] = versionInfo;
@@ -292,8 +293,9 @@ namespace UGFramework.Res
                 _target
             );
 
-            // Remove temp versionFile
-            File.Delete(filePath);
+            // Copy & Remove temp versionFile
+            FileUtility.CopyFile(filePath, _outPath + "/" + ResConfig.VERSION_FILE);
+            FileUtility.DeleteFile(filePath);
 
             return versionFile;
         }

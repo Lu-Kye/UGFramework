@@ -10,18 +10,21 @@ namespace UGFramework.Res
     {
         public string File;
         public string MD5;
+        public ulong Size;
     }
     
     [Serializable]
     public struct ResVersionFile
     {
         public string Version;
+        public int FileCount;
         public string[] Files;
         public ResVersionInfo[] Infos;
     
         public ResVersionFile(int length)
         {
             this.Version = ResConfig.VERSION;
+            this.FileCount = length;
             this.Files = new string[length];
             this.Infos = new ResVersionInfo[length];
         }

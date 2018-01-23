@@ -215,6 +215,7 @@ namespace UGFramework.Res
 
         /**
          * You must know what you are going to do, and be careful of unloading asset
+         * Note: @assetName is useless, cause unloading specific asset from an assetBundle is not implemented.
          */
         public void UnloadAsset(string bundlePathWithoutExtension, string assetName = null)
         {
