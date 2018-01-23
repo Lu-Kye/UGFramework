@@ -26,7 +26,7 @@ namespace UGFramework.Res
         [MenuItem(MenuConfig.RES + "/BuildOSX")]
         public static void BuildOSX()
         {
-            ResBuildManager.Build(BuildTarget.StandaloneOSXUniversal);
+            ResBuildManager.Build(BuildTarget.StandaloneOSX);
         }
         
         [MenuItem(MenuConfig.RES + "/Clear")]

@@ -35,7 +35,7 @@ namespace UGFramework.Res
                 {
                     platformPrefixPath = ResConfig.PLATFORM_PREFIX_WIN;
                 }
-                else if (_target == BuildTarget.StandaloneOSXUniversal)
+                else if (_target == BuildTarget.StandaloneOSX)
                 {
                     platformPrefixPath = ResConfig.PLATFORM_PREFIX_OSX;
                 }

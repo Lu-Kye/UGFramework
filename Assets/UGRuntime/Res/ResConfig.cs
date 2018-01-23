@@ -7,7 +7,7 @@ namespace UGFramework.Res
 {
     public class ResConfig
     {
-        public const string VERSION = "1.0.0";
+        public static string VERSION = "1.0.0";
         public const string VERSION_FILE = "resources_version.txt";
 
         public const string MAINIFEST = "res";
