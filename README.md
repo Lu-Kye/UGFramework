@@ -24,5 +24,6 @@ Make unity game easiler.
 
 # Examples
 ## Resources load/hotupdate
+![](Doc/Pictures/res_example_0.jpeg)
 ![](Doc/Pictures/res_example_1.jpeg)
 ![](Doc/Pictures/res_example_2.jpeg)
