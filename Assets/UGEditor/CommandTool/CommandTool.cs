@@ -1,9 +1,8 @@
 ﻿using System.Diagnostics;
 using System.Text;
-
+using UnityEngine;
 #if UNITY_EDITOR
 using UnityEditor;
-using UnityEngine;
 #endif
 
 namespace UGFramework.UGEditor
@@ -15,13 +14,7 @@ namespace UGFramework.UGEditor
 	 */ 
 	public class CommandTool 
 	{
-		public static string Root 
-		{
-			get
-			{
-				return Application.dataPath + "/..";
-			}
-		}
+		public static string Root = Application.dataPath + "/..";
 
 		public class Result
 		{
@@ -38,6 +31,7 @@ namespace UGFramework.UGEditor
 
 		public static Result Execute(string command, string arguments = null)
 		{
+#if UNITY_EDITOR
 			ProcessStartInfo processStartInfo = new ProcessStartInfo();
 			processStartInfo.FileName = command;
 			processStartInfo.Arguments = string.IsNullOrEmpty(arguments) ? "" : arguments;
@@ -75,6 +69,9 @@ namespace UGFramework.UGEditor
 			result.error = error;
 			result.output = output;
 			return result;
+#else
+			return new Result();
+#endif
 		}
 
 		/**
