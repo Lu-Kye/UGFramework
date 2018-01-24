@@ -11,14 +11,14 @@ namespace UGFramework.Res
 			ResManager.Instance.Init();
 		}
 
-		[ContextMenu("Test")]
-		void Test()
+		[ContextMenu("TestLoad&Instantiate")]
+		void TestLoad()
 		{
 			var prefab = ResManager.Instance.Load<GameObject>(ResConfig.UI_PREFABS_ROOT + "/" + "UILogin.prefab");
 			GameObject.Instantiate(prefab);
 		}
 
-		[ContextMenu("TestHotUpdate(OSX)")]
+		[ContextMenu("TestHotUpdate(Requirement: OSX,Python)")]
 		void TestHotUpdate()
 		{
 			UGFramework.UGEditor.CommandTool.ExecuteShell("Assets/UGRuntime/Res/ResExample/ResExampleServerStart.sh");

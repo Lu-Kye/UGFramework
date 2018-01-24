@@ -21,3 +21,8 @@ Make unity game easiler.
 - AI (StateMachine, BehaviourTree)
 - Object Pool
 - Doc generator
+
+# Examples
+## Resources load/hotupdate
+![](Doc/Pictures/res_example_1.jpeg)
+![](Doc/Pictures/res_example_2.jpeg)
