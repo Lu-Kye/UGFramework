@@ -18,14 +18,21 @@ namespace UGFramework.Res
     {
         public string Version;
         public int FileCount;
-        public string[] Files;
         public ResVersionInfo[] Infos;
+        public ResVersionInfo? Get(string file)
+        {
+            foreach (var info in this.Infos)
+            {
+                if (info.File == file)
+                    return info;
+            }
+            return null;
+        }
     
         public ResVersionFile(int length)
         {
             this.Version = ResConfig.VERSION;
             this.FileCount = length;
-            this.Files = new string[length];
             this.Infos = new ResVersionInfo[length];
         }
     
@@ -44,13 +51,11 @@ namespace UGFramework.Res
         {
             var diffInfos = new List<ResVersionInfo>();
 
-            var localFiles = local.Files.ToList();
             // Compare
-            for (int i = 0; i < remote.Files.Length; ++i)
+            for (int i = 0; i < remote.Infos.Length; ++i)
             {
-                var remoteFile = remote.Files[i];
                 var remoteInfo = remote.Infos[i];
-                remoteInfo.File = remoteFile;
+                var localInfo = local.Get(remoteInfo.File);
 
                 // Debug ?
                 if (DebugDiffInfos)
@@ -58,21 +63,19 @@ namespace UGFramework.Res
                     diffInfos.Add(remoteInfo);
                     continue;
                 }
-    
+
                 // Is exists ?
-                var localIndex = localFiles.IndexOf(remoteFile);
-                if (localIndex >= 0 == false)
+                if (localInfo == null)
                 {
                     diffInfos.Add(remoteInfo);
                     continue;
                 }
-    
+
                 // Is same md5 ?
-                var localInfo = local.Infos[localIndex];
-                if (localInfo.MD5 != remoteInfo.MD5)
+                if (((ResVersionInfo)localInfo).MD5 != remoteInfo.MD5)
                     diffInfos.Add(remoteInfo);
             }
-    
+
             return diffInfos;
         }
     }

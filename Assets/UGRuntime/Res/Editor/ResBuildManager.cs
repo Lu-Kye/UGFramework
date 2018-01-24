@@ -271,7 +271,6 @@ namespace UGFramework.Res
                 versionInfo.MD5 = MD5Utility.GetFileMD5(file);
                 versionInfo.Size = (ulong)FileUtility.ReadFileBytes(file).Length;
 
-                versionFile.Files[i] = file.ReplaceFirst(_outPath + "/", "");
                 versionFile.Infos[i] = versionInfo;
             }
 

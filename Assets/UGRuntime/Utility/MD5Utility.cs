@@ -8,17 +8,18 @@ namespace UGFramework.Utility
     {
         public static string GetFileMD5(string fullpath)
         {
+            var bytes = FileUtility.ReadFileBytes(fullpath);
+            return GetBytesMD5(bytes);
+        }
+
+        public static string GetBytesMD5(byte[] bytes)
+        {
             var sb = new StringBuilder();
             using (var md5 = MD5.Create())
             {
-                using (var fs = new FileStream(fullpath, FileMode.Open))
-                {
-                    int fsLen = (int)fs.Length;
-                    var bytes = new byte[fsLen];
-                    var hash = md5.ComputeHash(bytes);
-                    foreach (var b in hash)
-                        sb.Append(b.ToString("x2"));
-                }
+                var hash = md5.ComputeHash(bytes);
+                foreach (var b in hash)
+                    sb.Append(b.ToString("x2"));
             }
             return sb.ToString();
         }

@@ -5,6 +5,7 @@ using UnityEngine;
 using UnityEditor;
 using UGFramework.Extension;
 using UGFramework.Log;
+using UGFramework.Utility;
 
 namespace UGFramework.Res
 {
@@ -39,9 +40,8 @@ namespace UGFramework.Res
                 var sourceFile = file;
                 var targetFile = sourceFile.ReplaceLast(ResConfig.LUA_EXTENSION, ResConfig.MOBILE_LUA_EXTENSION);
 
-                if (File.Exists(targetFile))
-                    File.Delete(targetFile);
-                File.Copy(sourceFile, targetFile);
+                FileUtility.MoveFile(sourceFile, targetFile);
+                FileUtility.MoveFile(sourceFile+".meta",targetFile+".meta");
                 _tmpFiles.Add(targetFile);
 
                 var assetBundleName = targetFile.ReplaceFirst(Application.dataPath + "/" + ResConfig.RES_ROOT + "/", "") + ResConfig.BUNDLE_EXTENSION;
@@ -79,9 +79,14 @@ namespace UGFramework.Res
             for (int i = 0; i < _tmpFiles.Count; ++i)
             {
                 var tmpFile = _tmpFiles[i];
-                if (File.Exists(tmpFile))
-                    File.Delete(tmpFile);
+
+                var sourceFile = tmpFile;
+                var targetFile = sourceFile.ReplaceLast(ResConfig.MOBILE_LUA_EXTENSION, ResConfig.LUA_EXTENSION);
+
+                FileUtility.MoveFile(sourceFile, targetFile);
+                FileUtility.MoveFile(sourceFile+".meta",targetFile+".meta");
             }
+            AssetDatabase.Refresh();
         }
     }
 }
