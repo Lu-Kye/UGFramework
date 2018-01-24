@@ -36,6 +36,9 @@ namespace UGFramework.Res
                     return (float)(Index + 1) / Count;
                 }
             }
+
+            public ulong DownloadedSize;
+            public ulong DownloadedMaxSize;
         }
 
         public static ResManager Instance { get; private set; }

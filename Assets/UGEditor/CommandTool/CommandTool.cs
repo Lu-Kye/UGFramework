@@ -1,6 +1,10 @@
 ﻿using System.Diagnostics;
 using System.Text;
+
+#if UNITY_EDITOR
 using UnityEditor;
+using UnityEngine;
+#endif
 
 namespace UGFramework.UGEditor
 {
@@ -11,7 +15,13 @@ namespace UGFramework.UGEditor
 	 */ 
 	public class CommandTool 
 	{
-		public static string Root = Path.UGRoot;
+		public static string Root 
+		{
+			get
+			{
+				return Application.dataPath + "/..";
+			}
+		}
 
 		public class Result
 		{
@@ -30,9 +40,7 @@ namespace UGFramework.UGEditor
 		{
 			ProcessStartInfo processStartInfo = new ProcessStartInfo();
 			processStartInfo.FileName = command;
-			if (string.IsNullOrEmpty(arguments))
-				processStartInfo.Arguments = "";
-
+			processStartInfo.Arguments = string.IsNullOrEmpty(arguments) ? "" : arguments;
 			processStartInfo.CreateNoWindow = false;
 			processStartInfo.ErrorDialog = true;
 			processStartInfo.UseShellExecute = false;
@@ -48,15 +56,10 @@ namespace UGFramework.UGEditor
 			string output = process.StandardOutput.ReadToEnd();
 			string error = process.StandardError.ReadToEnd();
 
-			if (string.IsNullOrEmpty(output.Trim()))
-				UnityEngine.Debug.Log(command + arguments + " Executed.");
-			else
+			if (string.IsNullOrEmpty(output.Trim()) == false)
 				UnityEngine.Debug.Log(output);
-
-			if (!string.IsNullOrEmpty(error.Trim())) 
-			{
+			if (string.IsNullOrEmpty(error.Trim()) == false) 
 				UnityEngine.Debug.LogError(error);
-			}
 
 			EditorUtility.DisplayProgressBar(
 				"Command Executing", 
@@ -82,6 +85,7 @@ namespace UGFramework.UGEditor
 		 */ 
 		public static Result ExecuteShell(string shellFile, string arguments = null)
 		{
+			Execute("chmod", "+x " + Root + "/" + shellFile);
 			return Execute(Root + "/" + shellFile, arguments);  	
 		}
 	}

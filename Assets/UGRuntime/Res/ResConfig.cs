@@ -44,6 +44,13 @@ namespace UGFramework.Res
 
         // Resources server address
         public static string SERVER_URL = "http://localhost:8080";
+        public static string PLATFORM_SERVER_URL 
+        {
+            get 
+            {
+                return SERVER_URL + "/" + ResConfig.PLATFORM_PREFIX_PATH + "/" + ResConfig.RES_ROOT.ToLower(); 
+            }
+        }
 
         // When building application(ipa, apk), resources will be put in BUILDIN_PATH 
         public static string BUILDIN_PATH

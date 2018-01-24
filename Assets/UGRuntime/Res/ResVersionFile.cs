@@ -38,11 +38,12 @@ namespace UGFramework.Res
         {
             return JsonUtility.FromJson<ResVersionFile>(json);
         }
-    
+
+        public static bool DebugDiffInfos = false;
         public static List<ResVersionInfo> GetDiffInfos(ResVersionFile local, ResVersionFile remote)
         {
             var diffInfos = new List<ResVersionInfo>();
-    
+
             var localFiles = local.Files.ToList();
             // Compare
             for (int i = 0; i < remote.Files.Length; ++i)
@@ -50,6 +51,13 @@ namespace UGFramework.Res
                 var remoteFile = remote.Files[i];
                 var remoteInfo = remote.Infos[i];
                 remoteInfo.File = remoteFile;
+
+                // Debug ?
+                if (DebugDiffInfos)
+                {
+                    diffInfos.Add(remoteInfo);
+                    continue;
+                }
     
                 // Is exists ?
                 var localIndex = localFiles.IndexOf(remoteFile);

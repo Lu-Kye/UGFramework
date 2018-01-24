@@ -145,7 +145,7 @@ namespace UGFramework.Res
                     processInfo.Count = assets.Count;
                     if (string.IsNullOrEmpty(error) == false)
                     {
-                        processInfo.Error = string.Format("Download failure! asset({0}) error({1})", path, error);
+                        processInfo.Error = string.Format("Download failure! asset({0}) error({1}) url({2})", path, error, url);
                         callback(processInfo, www);
                         return;
                     }

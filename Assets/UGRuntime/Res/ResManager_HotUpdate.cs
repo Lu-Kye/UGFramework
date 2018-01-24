@@ -37,6 +37,7 @@ namespace UGFramework.Res
         public delegate bool ConfirmCallbackDef(int fileCount, ulong fileSizeSum);
         ConfirmCallbackDef _confirmCallback;
         Coroutine _hotupdatingCoroutine = null;
+        Coroutine _hotupdatingDownloadCoroutine = null;
         /**
          * Call HotUpdate when game starting 
          */
@@ -63,6 +64,7 @@ namespace UGFramework.Res
     #endif
 
             // Start hotupdating
+            this.StopHotUpdate();
             _confirmCallback = confirmCallback;
             _hotupdatingCoroutine = this.StartCoroutine(this.HotUpdating());
         }
@@ -74,6 +76,12 @@ namespace UGFramework.Res
             this.StopDownload();
             this.StopCoroutine(_hotupdatingCoroutine);
             _hotupdatingCoroutine = null;
+
+            if (_hotupdatingDownloadCoroutine != null)
+            {
+                this.StopCoroutine(_hotupdatingDownloadCoroutine);
+                _hotupdatingDownloadCoroutine = null;
+            }
         }
 
         IEnumerator HotUpdating()
@@ -91,7 +99,7 @@ namespace UGFramework.Res
             var failure = false;
             byte[] downloadBytes = null;
             yield return this.StartCoroutine(this.DownloadAssetsAsyncAndSave(
-                ResConfig.SERVER_URL + "/",
+                ResConfig.PLATFORM_SERVER_URL + "/",
                 assets, 
                 (processInfo, www) => {
                     if (string.IsNullOrEmpty(processInfo.Error) == false)
@@ -143,6 +151,11 @@ namespace UGFramework.Res
             for (int i = 0; i < diffInfos.Count; ++i)
             {
                 var asset = diffInfos[i].File;
+
+                // Exclude resources_version
+                if (asset == (ResConfig.ConvertToBundleName(ResConfig.VERSION_FILE)+ResConfig.BUNDLE_EXTENSION))
+                    continue;
+
                 assets.Add(asset);
                 size += diffInfos[i].Size;
             }
@@ -157,32 +170,31 @@ namespace UGFramework.Res
             _confirmCallback = null;
 
             // Start downloading and saving assetBundles to local storage system.
-            yield return this.StartCoroutine(this.DownloadAssetsAsyncAndSave(
-                ResConfig.SERVER_URL + "/",
+            bool failed = false;
+            ulong downloadedSize = 0;
+            ulong downloadedMaxSize = size;
+            _hotupdatingDownloadCoroutine = this.StartCoroutine(this.DownloadAssetsAsyncAndSave(
+                ResConfig.PLATFORM_SERVER_URL + "/",
                 assets, 
                 (processInfo, www) => {
+                    if (string.IsNullOrEmpty(processInfo.Error) == false) 
+                    {
+                        failed = true;
+                        this.StopHotUpdate();
+                    }
                     downloadedCount++;
                     processInfo.Index = downloadedCount - 1;
                     processInfo.Count = assets.Count;
+                    processInfo.DownloadedSize = downloadedSize = downloadedSize + (ulong)www.bytesDownloaded;
+                    processInfo.DownloadedMaxSize = downloadedMaxSize;
                     this.NotifyHotUpdate(processInfo);
                 }
             ));
+            yield return _hotupdatingDownloadCoroutine;
 
-            // Finally replace local version file
-            FileUtility.WriteFile(ResConfig.MOBILE_HOTUPDATE_PATH + "/" + file, downloadBytes, downloadBytes.Length, false);
-        }
-
-        [ContextMenu("TestHotUpdate")]
-        void TestHotUpdate()
-        {
-            this.TryHotUpdate((count, size)=> {
-                LogManager.Error(string.Format(
-                    "Download starting, fileCount({0}) size({1:0.00})", 
-                    count, 
-                    size/(1024*1024)
-                ));
-                return true;
-            });
+            // Finally & Successfully, then replace local version file
+            if (failed == false && downloadedSize >= downloadedMaxSize)
+                FileUtility.WriteFile(ResConfig.MOBILE_HOTUPDATE_PATH + "/" + file, downloadBytes, downloadBytes.Length, false);
         }
     }
 }
