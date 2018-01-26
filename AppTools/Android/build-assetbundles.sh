@@ -10,5 +10,5 @@ LOG_FILE=$BUILD_PATH/build-bundles.log
 rm -rf $LOG_FILE
 
 Unity -projectPath $PROJECT_PATH -executeMethod UGFramework.Res.ResMenu.BuildAndroid -batchmode -quit -logFile $LOG_FILE \
-    | sh tail-log.sh $LOG_FILE
+    | sh $P/../tail-log.sh $LOG_FILE 'Exiting batchmode successfully now' 'Aborting batchmode due to failure'
 

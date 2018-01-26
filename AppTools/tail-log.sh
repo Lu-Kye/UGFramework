@@ -1,9 +1,9 @@
 #!bin/sh
 
 P=$(cd `dirname $0`; pwd)
-source $P/config.cfg
-
 FILE=$1
+SUCCESS_FLAG=$2
+FAILURE_FLAG=$3
 
 num=1
 sleep_time=0.5
@@ -18,12 +18,15 @@ do
     fi
     tail $FILE
 
-    #echo $num
-    CHECK_RESULT=`cat $BUILD_PATH/build-bundles.log | grep 'Exiting batchmode successfully now' | wc -l`
-    #echo "The check results: "$CHECK_RESULT
+    CHECK_RESULT=`cat $FILE | grep "$SUCCESS_FLAG" | wc -l`
+    CHECK_FAILURE=`cat $FILE | grep "$FAILURE_FLAG" | wc -l`
+
     if [ $CHECK_RESULT -eq 1 ]; then
         echo "BUILD SUCCESSFUL"
         exit 0
+    elif [ $CHECK_FAILURE -eq 1 ]; then
+        echo "BUILD FAILTURE"
+        exit 1
     else
         sleep $sleep_time
     fi
