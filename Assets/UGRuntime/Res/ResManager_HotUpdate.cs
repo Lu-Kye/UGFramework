@@ -92,15 +92,14 @@ namespace UGFramework.Res
             // Get remote version file and compare
             // Download remote version file and save to temporary directory
             var file = ResConfig.ConvertToBundleName(ResConfig.VERSION_FILE) + ResConfig.BUNDLE_EXTENSION;
-            var assets = new List<string>();
-            assets.Add(file);
             var fileFolder = "resversionfile_tempfolder";
             var fileDirectory = ResConfig.MOBILE_HOTUPDATE_PATH + "/" + fileFolder;
             var failure = false;
             byte[] downloadBytes = null;
             yield return this.StartCoroutine(this.DownloadAssetsAsyncAndSave(
                 ResConfig.PLATFORM_SERVER_URL + "/",
-                assets, 
+                new List<string>() { "param=" + TimeUtility.Timestamp },
+                new List<string>() { file }, 
                 (processInfo, www) => {
                     if (string.IsNullOrEmpty(processInfo.Error) == false)
                     {
@@ -146,8 +145,11 @@ namespace UGFramework.Res
                 this.NotifyNoHotUpdate();
                 yield break;
             }
-            assets.Clear();
-            ulong size = 0;
+
+            var assets = new List<string>();
+            var assetSizes = new Dictionary<string, ulong>();
+            var assetUrlParams = new List<string>();
+            var assetsSumSize = (ulong)0;
             for (int i = 0; i < diffInfos.Count; ++i)
             {
                 var asset = diffInfos[i].File;
@@ -157,24 +159,26 @@ namespace UGFramework.Res
                     continue;
 
                 assets.Add(asset);
-                size += diffInfos[i].Size;
+                assetUrlParams.Add("md5=" + diffInfos[i].MD5);
+                assetSizes[asset] = diffInfos[i].Size;
+                assetsSumSize += diffInfos[i].Size;
             }
-            var count = assets.Count;
-            var downloadedCount = 0;
 
             // Whether continue download and update assets?
-            while (_confirmCallback != null && _confirmCallback(count, size) == false)
+            while (_confirmCallback != null && _confirmCallback(assets.Count, assetsSumSize) == false)
             {
                 yield return 1;
             }
             _confirmCallback = null;
 
             // Start downloading and saving assetBundles to local storage system.
-            bool failed = false;
-            ulong downloadedSize = 0;
-            ulong downloadedMaxSize = size;
+            var failed = false;
+            var downloadedCount = 0;
+            var downloadedSize = (ulong)0;
+            var downloadMaxSize = assetsSumSize;
             _hotupdatingDownloadCoroutine = this.StartCoroutine(this.DownloadAssetsAsyncAndSave(
                 ResConfig.PLATFORM_SERVER_URL + "/",
+                assetUrlParams,
                 assets, 
                 (processInfo, www) => {
                     if (string.IsNullOrEmpty(processInfo.Error) == false) 
@@ -185,15 +189,19 @@ namespace UGFramework.Res
                     downloadedCount++;
                     processInfo.Index = downloadedCount - 1;
                     processInfo.Count = assets.Count;
-                    processInfo.DownloadedSize = downloadedSize = downloadedSize + (ulong)www.bytesDownloaded;
-                    processInfo.DownloadedMaxSize = downloadedMaxSize;
+
+                    var currentDownloadedSize = (ulong)www.bytesDownloaded;
+                    if (assetSizes.ContainsKey(processInfo.File)) currentDownloadedSize = assetSizes[processInfo.File];
+
+                    processInfo.DownloadedSize = downloadedSize = downloadedSize + currentDownloadedSize;
+                    processInfo.DownloadedMaxSize = downloadMaxSize;
                     this.NotifyHotUpdate(processInfo);
                 }
             ));
             yield return _hotupdatingDownloadCoroutine;
 
             // Finally & Successfully, then replace local version file
-            if (failed == false && downloadedSize >= downloadedMaxSize)
+            if (failed == false && downloadedSize >= downloadMaxSize)
                 FileUtility.WriteFile(ResConfig.MOBILE_HOTUPDATE_PATH + "/" + file, downloadBytes, downloadBytes.Length, false);
         }
     }

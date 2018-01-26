@@ -50,22 +50,25 @@ namespace UGFramework.Res
             _downloadCoroutines.Clear();
         }
     
-        public IEnumerator DownloadAssetAsync(string url, Action<WWW> callback)
+        public IEnumerator DownloadAssetAsync(string url, string urlParams, Action<WWW> callback)
         {
-            var coroutine = this.StartCoroutine(_DownloadAssetAsync(url, (www) => {
+            var coroutine = this.StartCoroutine(_DownloadAssetAsync(url, urlParams, (www) => {
                 if (callback != null) callback(www); 
             }));
             _downloadCoroutines.AddLast(coroutine);
             yield return coroutine;
             _downloadCoroutines.Remove(coroutine);
         }
-        IEnumerator _DownloadAssetAsync(string url, Action<WWW> callback)
+        IEnumerator _DownloadAssetAsync(string url, string urlParams, Action<WWW> callback)
         {
             var tryTimes = 0;
             while (tryTimes <= this.DownloadRetryTimes)
             {
                 var time = Time.realtimeSinceStartup;
-                var www = new WWW(url);
+                var wwwUrl = url + (string.IsNullOrEmpty(urlParams) ? "" : "?" + urlParams);
+                // LogManager.Error(string.Format("_DownloadAssetAsync wwwUrl({0})", wwwUrl));
+
+                var www = new WWW(wwwUrl);
                 var result = new List<bool>() { false };
                 var progress = 0f;
                 var coroutine = this.StartCoroutine(_DownloadAssetAsyncWWW(www, result)); 
@@ -121,7 +124,13 @@ namespace UGFramework.Res
     
         int _assetsCount = 0;
         int _downloadedAssetsCount = 0;
-        IEnumerator DownloadAssetsAsyncAndSave(string urlPrefix, List<string> assets, Action<ProcessInfo, WWW> callback, string outputDirectory = null, int returnStep = 1)
+        IEnumerator DownloadAssetsAsyncAndSave(
+            string urlPrefix, 
+            List<string> urlParams,
+            List<string> assets, 
+            Action<ProcessInfo, WWW> callback, 
+            string outputDirectory = null, 
+            int returnStep = 1)
         {
             _assetsCount = assets.Count;
             _downloadedAssetsCount = 0;
@@ -130,7 +139,7 @@ namespace UGFramework.Res
                 var path = assets[i];
                 var file = Path.GetFileName(path);
                 var url = urlPrefix + path;
-                var coroutine = this.StartCoroutine(this.DownloadAssetAsync(url, (www) => {
+                var coroutine = this.StartCoroutine(this.DownloadAssetAsync(url, urlParams[i], (www) => {
                     _downloadedAssetsCount++;
     
                     // Define error message

@@ -16,6 +16,7 @@
 /Assets/StreamingAssets/windows.meta
 /Assets/StreamingAssets/osx/
 /Assets/StreamingAssets/osx.meta
+/AppTools/Android/build/
 
 *.DS_Store
 

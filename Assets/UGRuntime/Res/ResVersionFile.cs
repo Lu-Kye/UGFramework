@@ -51,6 +51,8 @@ namespace UGFramework.Res
         {
             var diffInfos = new List<ResVersionInfo>();
 
+            Debug.LogError("remote " + remote.Infos.Length);
+
             // Compare
             for (int i = 0; i < remote.Infos.Length; ++i)
             {

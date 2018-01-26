@@ -93,6 +93,7 @@ namespace UGFramework.Res
             var downloadedCount = 0;
             yield return this.StartCoroutine(this.DownloadAssetsAsyncAndSave(
                 urlPrefix,
+                null,
                 assets, 
                 (processInfo, www) => {
                     downloadedCount++;
