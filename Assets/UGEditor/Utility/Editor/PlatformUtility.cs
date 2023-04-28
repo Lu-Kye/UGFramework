@@ -13,7 +13,7 @@ namespace UGFramework.UGEditor
                 case BuildTarget.StandaloneWindows64:
                 case BuildTarget.StandaloneOSXIntel:
                 case BuildTarget.StandaloneOSXIntel64:
-                case BuildTarget.StandaloneOSXUniversal:
+                case BuildTarget.StandaloneOSX:
                     group = BuildTargetGroup.Standalone;
                     break;
                 

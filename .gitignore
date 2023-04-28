@@ -1,10 +1,11 @@
+/.vscode/
+
 /[Ll]ibrary/
 /[Tt]emp/
 /[Oo]bj/
 /[Bb]uild/
-/iOS/
-/Android/
-/.vscode/
+/[Ll]og/
+/[Pp]ackages/
 
 /Assets/VSCode
 /Assets/VSCode.meta
