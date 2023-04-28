@@ -1,6 +1,6 @@
 [![license](https://img.shields.io/badge/license-MIT-blue.png)](LICENSE)
 
-# Current unity version (Recommand use same or above)
+# Current unity version (Recommend use same or above)
 2021.3.23f1
 
 # Description
