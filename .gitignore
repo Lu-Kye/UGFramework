@@ -1,10 +1,12 @@
 /.vscode/
+/.idea/
 
 /[Ll]ibrary/
 /[Tt]emp/
 /[Oo]bj/
 /[Bb]uild/
 /[Ll]og/
+/[Ll]ogs/
 /[Pp]ackages/
 
 /Assets/VSCode

@@ -31,11 +31,11 @@ namespace UGFramework.Log
 #endif
     	}
 
-	    public static void Log(string msg)
+	    public static void Log(string msg, params object[] args)
 	    {
 	        if (LogLevel > LogLevel.DEBUG)
 	            return;
-	        Debug.Log(msg);
+	        Debug.LogFormat(msg, args);
 	        WriteLog(msg);
 	    }
 	

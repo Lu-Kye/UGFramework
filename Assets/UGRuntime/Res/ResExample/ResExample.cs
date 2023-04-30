@@ -32,7 +32,7 @@ namespace UGFramework.Res
 			ResVersionFile.DebugDiffInfos = true;
 
 			ResManager.Instance.OnHotUpdate = (info)=>{
-				LogManager.Error(string.Format(
+				LogManager.Log(string.Format(
 					"OnHotUpdate file({0}) count({1}/{2}) countPercent({3}) size({4:#0.00}mb/{5:#0.00}mb) error({6})",
 					info.File,
 					info.Index+1, info.Count,
@@ -43,7 +43,7 @@ namespace UGFramework.Res
 			};
 
 			ResManager.Instance.TryHotUpdate((count, size)=>{
-				LogManager.Error(string.Format(
+				LogManager.Log(string.Format(
 					"HotUpdate count({0}) size({1})",
 					count,
 					size
